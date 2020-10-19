@@ -1,0 +1,3 @@
+[submodule "external/lib-optional"]
+	path = external/lib-optional
+	url = https://github.com/proxict/lib-optional.git
