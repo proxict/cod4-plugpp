@@ -25,6 +25,7 @@ extern "C" __attribute__((destructor)) void onLibraryUnload() {
 }
 
 namespace plugpp {
+
 PluginEntry::PluginEntry() {
     Plugin_Printf("^2Plugin entry constructed^7\n");
     pluginMain(*this);
@@ -53,7 +54,7 @@ PCL int OnInit() {
         Plugin_Printf("^1Exception raised: %s^7\n", e.what());
         return 1;
     } catch (...) {
-        Plugin_Printf("^1Unknown exception raised^7\n");
+        Plugin_Printf("^1Unknown exception raised during plugin loading^7\n");
         return 1;
     }
     return 0;
@@ -61,12 +62,17 @@ PCL int OnInit() {
 
 PCL void OnUnload() {
     try {
+        gEntry->getPlugin()->onPluginUnload();
         if (gEntry) {
             delete gEntry;
             gEntry = nullptr;
         }
+    } catch (const std::exception& e) {
+        Plugin_Printf("^1Exception raised: %s^7\n", e.what());
+    } catch (const plugpp::Exception& e) {
+        Plugin_Printf("^1Exception raised: %s^7\n", e.what());
     } catch (...) {
-        Plugin_Printf("^1Exception raised during plugin unloading^7\n");
+        Plugin_Printf("^1Unknown exception raised during plugin unloading^7\n");
     }
 }
 

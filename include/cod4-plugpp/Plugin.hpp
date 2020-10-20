@@ -3,6 +3,7 @@
 
 #include "pinc.h"
 
+#include <functional>
 #include <string>
 
 #include <lib-optional/optional.hpp>
@@ -16,6 +17,25 @@ using Kick = Optional<KickReason>;
 
 static constexpr NullOptionalT NoKick(NullOptional);
 
+namespace detail {
+    template <int TInstance, typename T>
+    struct CallbackImpl;
+
+    template <int TInstance, typename Ret, typename... Params>
+    struct CallbackImpl<TInstance, Ret(Params...)> {
+        template <typename... Args>
+        static Ret callback(Args... args) {
+            return functor(args...);
+        }
+        static std::function<Ret(Params...)> functor;
+    };
+
+    template <int TInstance, typename Ret, typename... Params>
+    std::function<Ret(Params...)> CallbackImpl<TInstance, Ret(Params...)>::functor;
+} // namespace detail
+
+#define InstantiateCallback(signature) ::plugpp::detail::CallbackImpl<__COUNTER__, signature>
+
 class Plugin {
 public:
     explicit Plugin() = default;
@@ -23,6 +43,8 @@ public:
     virtual ~Plugin() = default;
 
     virtual int onPluginLoad() { return 0; }
+
+    virtual void onPluginUnload() {}
 
     virtual void onOneSecond() {}
 
