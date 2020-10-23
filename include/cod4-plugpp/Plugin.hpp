@@ -15,6 +15,9 @@ using namespace libOptional;
 using KickReason = std::string;
 using Kick = Optional<KickReason>;
 
+enum class MessageVisibility { HIDE, SHOW };
+enum class ReservedSlotRequest { DENY, ALLOW };
+
 static constexpr NullOptionalT NoKick(NullOptional);
 
 namespace detail {
@@ -50,6 +53,13 @@ public:
 
     virtual void onTenSeconds() {}
 
+    virtual MessageVisibility onMessageSent(const std::string& message, int slot, int mode) {
+        (void)message;
+        (void)slot;
+        (void)mode;
+        return MessageVisibility::SHOW;
+    }
+
     virtual void onPluginInfoRequest(pluginInfo_t* info) = 0;
 
     virtual Kick onPlayerConnect(int clientnum, netadr_t* netaddr, const char* userinfo) {
@@ -65,6 +75,36 @@ public:
     }
 
     virtual void onTerminate() {}
+
+    virtual void onPlayerAddBan(baninfo_t* banInfo) {}
+
+    virtual void onPlayerRemoveBan(baninfo_t* banInfo) {}
+
+    virtual std::string onPlayerGetBanStatus(baninfo_t* banInfo) { return std::string(); }
+
+    virtual void onPreFastRestart() {}
+
+    virtual void onExitLevel() {}
+
+    virtual void onPostFastRestart() {}
+
+    virtual void onSpawnServer() {}
+
+    virtual void onFrame() {}
+
+    virtual void onClientSpawn(gentity_t* entity) {}
+
+    virtual void onClientEnteredWorld(client_t* client) {}
+
+    virtual void onClientUserInfoChanged(client_t* client) {}
+
+    virtual void onClientMoveCommand(client_t* client, usercmd_t* ucmd) {}
+
+    virtual ReservedSlotRequest onPlayerReservedSlotRequest(netadr_t* from) {
+        (void)from;
+        // TODO: Find out what's the default value
+        return ReservedSlotRequest::DENY;
+    }
 };
 
 } // namespace plugpp

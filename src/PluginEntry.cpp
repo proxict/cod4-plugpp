@@ -111,6 +111,21 @@ PCL void OnPlayerDC(client_t* client, const char* reason) {
     gEntry->getPlugin()->onPlayerDisconnect(client, reason);
 }
 
+PCL void OnPlayerAddBan(baninfo_t* baninfo) {
+    gEntry->getPlugin()->onPlayerAddBan(baninfo);
+}
+
+PCL void OnPlayerRemoveBan(baninfo_t* baninfo) {
+    gEntry->getPlugin()->onPlayerRemoveBan(baninfo);
+}
+
+PCL void OnPlayerGetBanStatus(baninfo_t* baninfo, char* message, int len) {
+    const std::string status = gEntry->getPlugin()->onPlayerGetBanStatus(baninfo);
+    if (!status.empty()) {
+        std::strncpy(message, status.c_str(), len);
+    }
+}
+
 PCL void OnInfoRequest(pluginInfo_t* info) {
     info->handlerVersion.major = PLUGIN_HANDLER_VERSION_MAJOR;
     info->handlerVersion.minor = PLUGIN_HANDLER_VERSION_MINOR;
@@ -132,5 +147,57 @@ PCL void OnOneSecond() {
 
 PCL void OnTenSeconds() {
     gEntry->getPlugin()->onTenSeconds();
+}
+
+PCL void OnMessageSent(char* message, int slot, qboolean* show, int mode) {
+    *show = gEntry->getPlugin()->onMessageSent(message, slot, mode) == plugpp::MessageVisibility::SHOW
+                ? qboolean::qtrue
+                : qboolean::qfalse;
+}
+
+PCL void OnPreFastRestart() {
+    gEntry->getPlugin()->onPreFastRestart();
+}
+
+PCL void OnExitLevel() {
+    gEntry->getPlugin()->onExitLevel();
+}
+
+PCL void OnPostFastRestart() {
+    gEntry->getPlugin()->onPostFastRestart();
+}
+
+PCL void OnSpawnServer() {
+    gEntry->getPlugin()->onSpawnServer();
+}
+
+PCL void OnFrame() {
+    gEntry->getPlugin()->onFrame();
+}
+
+PCL void OnClientSpawn(gentity_t* ent) {
+    gEntry->getPlugin()->onClientSpawn(ent);
+}
+
+PCL void OnClientEnterWorld(client_t* client) {
+    gEntry->getPlugin()->onClientEnteredWorld(client);
+}
+
+PCL void OnClientUserinfoChanged(client_t* client) {
+    gEntry->getPlugin()->onClientUserInfoChanged(client);
+}
+
+PCL void OnClientMoveCommand(client_t* client, usercmd_t* ucmd) {
+    gEntry->getPlugin()->onClientMoveCommand(client, ucmd);
+}
+
+PCL void
+OnPlayerWantReservedSlot(netadr_t* from, char* pbguid, char* userinfo, int authstate, qboolean* isallowed) {
+    (void)pbguid;
+    (void)userinfo;
+    (void)authstate;
+    *isallowed = gEntry->getPlugin()->onPlayerReservedSlotRequest(from) == plugpp::ReservedSlotRequest::ALLOW
+                     ? qboolean::qtrue
+                     : qboolean::qfalse;
 }
 
