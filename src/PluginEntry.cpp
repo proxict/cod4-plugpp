@@ -150,7 +150,7 @@ PCL void OnTenSeconds() {
 }
 
 PCL void OnMessageSent(char* message, int slot, qboolean* show, int mode) {
-    *show = gEntry->getPlugin()->onMessageSent(message, slot, mode) == plugpp::MessageVisibility::SHOW
+    *show = (*show && gEntry->getPlugin()->onMessageSent(message, slot, mode) == plugpp::MessageVisibility::SHOW)
                 ? qboolean::qtrue
                 : qboolean::qfalse;
 }
