@@ -2,6 +2,8 @@
 c++
 -std=c++14
 -Iinclude
+-I/home/proxict/cpp_programming/CoD4x_Server/src
+-I/home/proxict/cpp_programming/CoD4x_Server/plugins
 -Iexternal/lib-expected/include
 -Iexternal/lib-optional/include
 -I..

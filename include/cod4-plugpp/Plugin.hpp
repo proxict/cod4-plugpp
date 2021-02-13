@@ -1,8 +1,11 @@
 #ifndef COD4_PLUGPP_INCLUDE_COD4_PLUGPP_PLUGIN_HPP_
 #define COD4_PLUGPP_INCLUDE_COD4_PLUGPP_PLUGIN_HPP_
 
-#include "pinc.h"
+#include "cod4-plugpp/Command.hpp"
+#include "cod4-plugpp/Exception.hpp"
+#include "cod4-plugpp/PluginApi.h"
 
+#include <cstdint>
 #include <functional>
 #include <string>
 
@@ -19,25 +22,6 @@ enum class MessageVisibility { HIDE, SHOW };
 enum class ReservedSlotRequest { DENY, ALLOW };
 
 static constexpr NullOptionalT NoKick(NullOptional);
-
-namespace detail {
-    template <int TInstance, typename T>
-    struct CallbackImpl;
-
-    template <int TInstance, typename Ret, typename... Params>
-    struct CallbackImpl<TInstance, Ret(Params...)> {
-        template <typename... Args>
-        static Ret callback(Args... args) {
-            return functor(args...);
-        }
-        static std::function<Ret(Params...)> functor;
-    };
-
-    template <int TInstance, typename Ret, typename... Params>
-    std::function<Ret(Params...)> CallbackImpl<TInstance, Ret(Params...)>::functor;
-} // namespace detail
-
-#define InstantiateCallback(signature) ::plugpp::detail::CallbackImpl<__COUNTER__, signature>
 
 class Plugin {
 public:
@@ -60,7 +44,7 @@ public:
         return MessageVisibility::SHOW;
     }
 
-    virtual void onPluginInfoRequest(pluginInfo_t* info) = 0;
+    virtual void onPluginInfoRequest(pluginInfo_t* info) { (void)info; }
 
     virtual Kick onPlayerConnect(int clientnum, netadr_t* netaddr, const char* userinfo) {
         (void)clientnum;
@@ -76,11 +60,14 @@ public:
 
     virtual void onTerminate() {}
 
-    virtual void onPlayerAddBan(baninfo_t* banInfo) {}
+    virtual void onPlayerAddBan(baninfo_t* banInfo) { (void)banInfo; }
 
-    virtual void onPlayerRemoveBan(baninfo_t* banInfo) {}
+    virtual void onPlayerRemoveBan(baninfo_t* banInfo) { (void)banInfo; }
 
-    virtual std::string onPlayerGetBanStatus(baninfo_t* banInfo) { return std::string(); }
+    virtual std::string onPlayerGetBanStatus(baninfo_t* banInfo) {
+        (void)banInfo;
+        return std::string();
+    }
 
     virtual void onPreFastRestart() {}
 
@@ -92,13 +79,16 @@ public:
 
     virtual void onFrame() {}
 
-    virtual void onClientSpawn(gentity_t* entity) {}
+    virtual void onClientSpawn(gentity_t* entity) { (void)entity; }
 
-    virtual void onClientEnteredWorld(client_t* client) {}
+    virtual void onClientEnteredWorld(client_t* client) { (void)client; }
 
-    virtual void onClientUserInfoChanged(client_t* client) {}
+    virtual void onClientUserInfoChanged(client_t* client) { (void)client; }
 
-    virtual void onClientMoveCommand(client_t* client, usercmd_t* ucmd) {}
+    virtual void onClientMoveCommand(client_t* client, usercmd_t* ucmd) {
+        (void)client;
+        (void)ucmd;
+    }
 
     virtual ReservedSlotRequest onPlayerReservedSlotRequest(netadr_t* from) {
         (void)from;

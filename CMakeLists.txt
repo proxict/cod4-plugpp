@@ -22,6 +22,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 add_subdirectory(external/lib-optional)
 
 add_library(cod4-plugpp OBJECT
+    src/Command.cpp
     src/PluginEntry.cpp
 )
 target_link_libraries(cod4-plugpp

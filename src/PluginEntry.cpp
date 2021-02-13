@@ -5,83 +5,65 @@
 
 static plugpp::PluginEntry* gEntry = nullptr;
 
-extern "C" __attribute__((constructor)) void onLibraryLoad() {
-    try {
-        gEntry = new plugpp::PluginEntry();
-    } catch (const std::exception& e) {
-        Plugin_Printf("^1Exception raised: %s^7\n", e.what());
-    } catch (const plugpp::Exception& e) {
-        Plugin_Printf("^1Exception raised: %s^7\n", e.what());
-    } catch (...) {
-        Plugin_Printf("^1Unknown exception raised^7\n");
-    }
-}
-
-extern "C" __attribute__((destructor)) void onLibraryUnload() {
-    if (gEntry) {
-        delete gEntry;
-        gEntry = nullptr;
-    }
-}
-
 namespace plugpp {
 
 PluginEntry::PluginEntry() {
-    Plugin_Printf("^2Plugin entry constructed^7\n");
+    Plugin_Printf("^2Plugin entry constructed\n");
     pluginMain(*this);
 }
 
 PluginEntry::~PluginEntry() {
-    Plugin_Printf("^2Plugin entry destroyed^7\n");
+    Plugin_Printf("^2Plugin entry destroyed\n");
 }
 } // namespace plugpp
 
-PCL int OnInit() {
-    // If a plugin is unloaded and then loaded again, the C constructor won't be triggered, so we'll rely on
-    // this function being called and re-construct the entry here. This has one implication that the
-    // overridden onPluginInfoRequest won't be handled at the plugin startup.
-    gEntry = gEntry ? gEntry : new plugpp::PluginEntry();
-    if (!gEntry) {
-        Plugin_Printf("^1Failed to load plugin^7\n");
-        return 1;
-    }
+template <typename TCallable>
+typename std::enable_if<std::is_same<typename std::result_of<TCallable()>::type, void>::value, void>::type
+callableError() {}
+
+template <typename TCallable>
+typename std::enable_if<std::is_same<typename std::result_of<TCallable()>::type, int>::value, int>::type
+callableError() {
+    return -1;
+}
+
+template <typename TCallable>
+typename std::result_of<TCallable()>::type doNoexcept(TCallable&& callable) noexcept {
     try {
-        return gEntry->getPlugin()->onPluginLoad();
-    } catch (const std::exception& e) {
-        Plugin_Printf("^1Exception raised: %s^7\n", e.what());
-        return 1;
+        return callable();
     } catch (const plugpp::Exception& e) {
-        Plugin_Printf("^1Exception raised: %s^7\n", e.what());
-        return 1;
+        Plugin_Printf("^1Exception raised: %s\n", e.what().c_str());
+    } catch (const std::exception& e) {
+        Plugin_Printf("^1Exception raised: %s\n", e.what());
     } catch (...) {
-        Plugin_Printf("^1Unknown exception raised during plugin loading^7\n");
-        return 1;
+        Plugin_Printf("^1Unknown exception raised during plugin loading\n");
     }
-    return 0;
+    return callableError<TCallable>();
+}
+
+PCL int OnInit() {
+    return doNoexcept([]() {
+        gEntry = gEntry ? gEntry : new plugpp::PluginEntry();
+        if (!gEntry) {
+            Plugin_Printf("^1Failed to initialize plugin entry\n");
+            return -1;
+        }
+        return gEntry->getPlugin()->onPluginLoad();
+    });
 }
 
 PCL void OnUnload() {
-    try {
+    doNoexcept([]() {
         gEntry->getPlugin()->onPluginUnload();
         if (gEntry) {
             delete gEntry;
             gEntry = nullptr;
         }
-    } catch (const std::exception& e) {
-        Plugin_Printf("^1Exception raised: %s^7\n", e.what());
-    } catch (const plugpp::Exception& e) {
-        Plugin_Printf("^1Exception raised: %s^7\n", e.what());
-    } catch (...) {
-        Plugin_Printf("^1Unknown exception raised during plugin unloading^7\n");
-    }
+    });
 }
 
 PCL void OnTerminate() {
-    try {
-        gEntry->getPlugin()->onTerminate();
-    } catch (...) {
-        Plugin_Printf("^1Exception raised during plugin terminating^7\n");
-    }
+    doNoexcept([]() { gEntry->getPlugin()->onTerminate(); });
 }
 
 PCL void OnPlayerConnect(int clientnum,
@@ -101,29 +83,33 @@ PCL void OnPlayerConnect(int clientnum,
     // This argument is 7th so nothing is passed here.
     (void)deniedmsgbufmaxlen;
 
-    const plugpp::Kick kick = gEntry->getPlugin()->onPlayerConnect(clientnum, netaddress, userinfo);
-    if (kick) {
-        std::strcpy(deniedmsg, kick.value().c_str());
-    }
+    doNoexcept([&]() {
+        const plugpp::Kick kick = gEntry->getPlugin()->onPlayerConnect(clientnum, netaddress, userinfo);
+        if (kick) {
+            std::strcpy(deniedmsg, kick.value().c_str());
+        }
+    });
 }
 
 PCL void OnPlayerDC(client_t* client, const char* reason) {
-    gEntry->getPlugin()->onPlayerDisconnect(client, reason);
+    doNoexcept([&]() { gEntry->getPlugin()->onPlayerDisconnect(client, reason); });
 }
 
 PCL void OnPlayerAddBan(baninfo_t* baninfo) {
-    gEntry->getPlugin()->onPlayerAddBan(baninfo);
+    doNoexcept([&]() { gEntry->getPlugin()->onPlayerAddBan(baninfo); });
 }
 
 PCL void OnPlayerRemoveBan(baninfo_t* baninfo) {
-    gEntry->getPlugin()->onPlayerRemoveBan(baninfo);
+    return doNoexcept([&]() { gEntry->getPlugin()->onPlayerRemoveBan(baninfo); });
 }
 
 PCL void OnPlayerGetBanStatus(baninfo_t* baninfo, char* message, int len) {
-    const std::string status = gEntry->getPlugin()->onPlayerGetBanStatus(baninfo);
-    if (!status.empty()) {
-        std::strncpy(message, status.c_str(), len);
-    }
+    doNoexcept([&]() {
+        const std::string status = gEntry->getPlugin()->onPlayerGetBanStatus(baninfo);
+        if (!status.empty()) {
+            std::strncpy(message, status.c_str(), len);
+        }
+    });
 }
 
 PCL void OnInfoRequest(pluginInfo_t* info) {
@@ -132,63 +118,66 @@ PCL void OnInfoRequest(pluginInfo_t* info) {
     info->pluginVersion.major = 1;
     info->pluginVersion.minor = 0;
     std::strncpy(info->fullName, "C++ Plugin API Wrapper", sizeof(info->fullName));
-    std::strncpy(info->shortDescription, "Wrapper around the C plugin API", sizeof(info->shortDescription));
-    std::strncpy(info->longDescription,
-                 "Fill information about your plugin by creating the onPluginInfoRequest function",
-                 sizeof(info->longDescription));
-    if (gEntry) {
-        gEntry->getPlugin()->onPluginInfoRequest(info);
-    }
+    std::strncpy(info->shortDescription, "C++ wrapper for CoD4x plugin API", sizeof(info->shortDescription));
+    std::strncpy(info->longDescription, "C++ wrapper for CoD4x plugin API", sizeof(info->longDescription));
+    doNoexcept([&]() {
+        if (gEntry) {
+            gEntry->getPlugin()->onPluginInfoRequest(info);
+        }
+    });
 }
 
 PCL void OnOneSecond() {
-    gEntry->getPlugin()->onOneSecond();
+    doNoexcept([]() { gEntry->getPlugin()->onOneSecond(); });
 }
 
 PCL void OnTenSeconds() {
-    gEntry->getPlugin()->onTenSeconds();
+    doNoexcept([]() { gEntry->getPlugin()->onTenSeconds(); });
 }
 
 PCL void OnMessageSent(char* message, int slot, qboolean* show, int mode) {
-    *show = (*show && gEntry->getPlugin()->onMessageSent(message, slot, mode) == plugpp::MessageVisibility::SHOW)
-                ? qboolean::qtrue
-                : qboolean::qfalse;
+    doNoexcept([&]() {
+        *show = (*show && gEntry->getPlugin()->onMessageSent(message + 1, slot, mode) ==
+                              plugpp::MessageVisibility::SHOW)
+                    ? qboolean::qtrue
+                    : qboolean::qfalse;
+    });
 }
 
 PCL void OnPreFastRestart() {
-    gEntry->getPlugin()->onPreFastRestart();
+    doNoexcept([]() { gEntry->getPlugin()->onPreFastRestart(); });
 }
 
 PCL void OnExitLevel() {
-    gEntry->getPlugin()->onExitLevel();
+    doNoexcept([]() { gEntry->getPlugin()->onExitLevel(); });
 }
 
 PCL void OnPostFastRestart() {
-    gEntry->getPlugin()->onPostFastRestart();
+    doNoexcept([]() { gEntry->getPlugin()->onPostFastRestart(); });
 }
 
 PCL void OnSpawnServer() {
-    gEntry->getPlugin()->onSpawnServer();
+    doNoexcept([]() { gEntry->getPlugin()->onSpawnServer(); });
 }
 
 PCL void OnFrame() {
-    gEntry->getPlugin()->onFrame();
+    doNoexcept([]() { gEntry->getPlugin()->onFrame(); });
 }
 
 PCL void OnClientSpawn(gentity_t* ent) {
-    gEntry->getPlugin()->onClientSpawn(ent);
+    doNoexcept([&]() { gEntry->getPlugin()->onClientSpawn(ent); });
 }
 
 PCL void OnClientEnterWorld(client_t* client) {
-    gEntry->getPlugin()->onClientEnteredWorld(client);
+    doNoexcept([&]() { gEntry->getPlugin()->onClientEnteredWorld(client); });
 }
 
 PCL void OnClientUserinfoChanged(client_t* client) {
-    gEntry->getPlugin()->onClientUserInfoChanged(client);
+    doNoexcept([&]() { gEntry->getPlugin()->onClientUserInfoChanged(client); });
 }
 
 PCL void OnClientMoveCommand(client_t* client, usercmd_t* ucmd) {
-    gEntry->getPlugin()->onClientMoveCommand(client, ucmd);
+    doNoexcept([&]() { gEntry->getPlugin()->onClientMoveCommand(client, ucmd); });
 }
 
 PCL void
@@ -196,8 +185,11 @@ OnPlayerWantReservedSlot(netadr_t* from, char* pbguid, char* userinfo, int auths
     (void)pbguid;
     (void)userinfo;
     (void)authstate;
-    *isallowed = gEntry->getPlugin()->onPlayerReservedSlotRequest(from) == plugpp::ReservedSlotRequest::ALLOW
-                     ? qboolean::qtrue
-                     : qboolean::qfalse;
+    doNoexcept([&]() {
+        *isallowed =
+            gEntry->getPlugin()->onPlayerReservedSlotRequest(from) == plugpp::ReservedSlotRequest::ALLOW
+                ? qboolean::qtrue
+                : qboolean::qfalse;
+    });
 }
 
