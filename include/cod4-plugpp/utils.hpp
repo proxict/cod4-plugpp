@@ -1,6 +1,8 @@
 #ifndef COD4_PLUGPP_INCLUDE_COD4_PLUGPP_UTILS_HPP_
 #define COD4_PLUGPP_INCLUDE_COD4_PLUGPP_UTILS_HPP_
 
+#include "cod4-plugpp/PluginApi.h"
+
 #include <sstream>
 #include <string>
 
@@ -30,6 +32,29 @@ inline std::string join(const T first, const T last, const std::string& separato
         sep = separator.c_str();
     }
     return ss.str();
+}
+
+inline std::string toStr(const netadr_t* netaddress) {
+    char buffer[53];
+    Plugin_NET_AdrToStringMT(const_cast<netadr_t*>(netaddress), buffer, sizeof(buffer));
+    std::string ip(buffer);
+
+    const std::size_t portIndex = ip.find_last_of(':');
+    if (portIndex != std::string::npos) {
+        ip.erase(portIndex, std::string::npos);
+    }
+
+    const std::size_t openBracketIndex = ip.find_first_of('[');
+    if (openBracketIndex != std::string::npos) {
+        ip.erase(openBracketIndex, 1);
+    }
+
+    const std::size_t closeBracketIndex = ip.find_last_of(']');
+    if (closeBracketIndex != std::string::npos) {
+        ip.erase(closeBracketIndex, 1);
+    }
+
+    return ip;
 }
 
 } // namespace plugpp
