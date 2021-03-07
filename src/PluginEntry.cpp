@@ -83,12 +83,14 @@ PCL void OnPlayerConnect(int clientnum,
     // This argument is 7th so nothing is passed here.
     (void)deniedmsgbufmaxlen;
 
-    doNoexcept([&]() {
-        const plugpp::Kick kick = gEntry->getPlugin()->onPlayerConnect(clientnum, netaddress, userinfo);
-        if (kick) {
-            std::strcpy(deniedmsg, kick.value().c_str());
-        }
-    });
+    if (!deniedmsg[0]) {
+        doNoexcept([&]() {
+            const plugpp::Kick kick = gEntry->getPlugin()->onPlayerConnect(clientnum, netaddress, userinfo);
+            if (kick) {
+                std::strcpy(deniedmsg, kick->c_str());
+            }
+        });
+    }
 }
 
 PCL void OnPlayerDC(client_t* client, const char* reason) {
@@ -104,12 +106,14 @@ PCL void OnPlayerRemoveBan(baninfo_t* baninfo) {
 }
 
 PCL void OnPlayerGetBanStatus(baninfo_t* baninfo, char* message, int len) {
-    doNoexcept([&]() {
-        const std::string status = gEntry->getPlugin()->onPlayerGetBanStatus(baninfo);
-        if (!status.empty()) {
-            std::strncpy(message, status.c_str(), len);
-        }
-    });
+    if (!message[0]) {
+        doNoexcept([&]() {
+            const plugpp::Kick kick = gEntry->getPlugin()->onPlayerGetBanStatus(baninfo);
+            if (kick) {
+                std::strncpy(message, kick->c_str(), len);
+            }
+        });
+    }
 }
 
 PCL void OnInfoRequest(pluginInfo_t* info) {

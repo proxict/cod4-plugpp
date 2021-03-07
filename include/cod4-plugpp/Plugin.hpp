@@ -64,9 +64,9 @@ public:
 
     virtual void onPlayerRemoveBan(baninfo_t* banInfo) { (void)banInfo; }
 
-    virtual std::string onPlayerGetBanStatus(baninfo_t* banInfo) {
+    virtual Kick onPlayerGetBanStatus(baninfo_t* banInfo) {
         (void)banInfo;
-        return std::string();
+        return NoKick;
     }
 
     virtual void onPreFastRestart() {}
