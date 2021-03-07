@@ -57,6 +57,19 @@ inline std::string toStr(const netadr_t* netaddress) {
     return ip;
 }
 
+inline bool toNetAddr(const std::string& address, netadr_t* out) {
+    const netadrtype_t ipType = address.find('.') != std::string::npos ? NA_IP : NA_IP6;
+    return Plugin_NET_StringToAdr(address.c_str(), out, ipType) != 0;
+}
+
+inline Optional<netadr_t> toNetAddr(const std::string& address) {
+    netadr_t out;
+    if (!toNetAddr(address, &out)) {
+        return NullOptional;
+    }
+    return out;
+}
+
 } // namespace plugpp
 
 #endif // COD4_PLUGPP_INCLUDE_COD4_PLUGPP_UTILS_HPP_
