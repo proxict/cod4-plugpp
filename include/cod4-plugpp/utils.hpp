@@ -3,6 +3,7 @@
 
 #include "cod4-plugpp/PluginApi.h"
 
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <sstream>
@@ -35,6 +36,33 @@ inline std::string join(const T first, const T last, const std::string& separato
         sep = separator.c_str();
     }
     return ss.str();
+}
+
+inline std::vector<std::string> tokenize(const std::string& str, const std::string& delim = " ") {
+    if (str.empty()) {
+        return {};
+    }
+    std::vector<std::string> tokens;
+    std::size_t last = 0;
+    std::size_t next = 0;
+    while ((next = str.find(delim, last)) != std::string::npos) {
+        tokens.emplace_back(str.substr(last, next - last));
+        last = next + delim.size();
+    }
+    tokens.emplace_back(str.substr(last));
+    return tokens;
+}
+
+inline std::string toLower(const std::string& str) {
+    std::string ret(str);
+    std::transform(ret.begin(), ret.end(), ret.begin(), [](unsigned char c) { return std::tolower(c); });
+    return ret;
+}
+
+inline std::string toUpper(const std::string& str) {
+    std::string ret(str);
+    std::transform(ret.begin(), ret.end(), ret.begin(), [](unsigned char c) { return std::toupper(c); });
+    return ret;
 }
 
 inline std::string toStr(const netadr_t* netaddress) {
@@ -73,7 +101,7 @@ inline Optional<netadr_t> toNetAddr(const std::string& address) {
     return out;
 }
 
-class Time {
+class Time final {
 public:
     enum class Segment { YEARS, MONTHS, DAYS, HOURS, MINUTES, SECONDS };
     Time(const std::uint64_t timeSec) {
@@ -99,7 +127,7 @@ public:
     std::array<int, 6> mSegments;
 };
 
-std::string toStr(const Time& time) {
+inline std::string toStr(const Time& time) {
     std::vector<std::string> segments;
 
     auto maybeAppendSegment = [&](const Time::Segment segment) {
@@ -140,6 +168,92 @@ std::string toStr(const Time& time) {
     }
     return join(std::begin(segments), std::end(segments), ", ");
 }
+
+class ScopedCriticalSection final {
+public:
+    explicit ScopedCriticalSection() { Plugin_EnterCriticalSection(); }
+    ~ScopedCriticalSection() noexcept { Plugin_LeaveCriticalSection(); }
+
+    ScopedCriticalSection& operator=(const ScopedCriticalSection&) = delete;
+    ScopedCriticalSection(const ScopedCriticalSection&) = delete;
+    ScopedCriticalSection& operator=(ScopedCriticalSection&&) = delete;
+    ScopedCriticalSection(ScopedCriticalSection&&) = delete;
+};
+
+class Cvar final {
+public:
+    Cvar(std::string name, const std::string& description = "") noexcept
+        : mName(std::move(name)) {
+        ScopedCriticalSection criticalSectionGuard;
+        mCvar = static_cast<cvar_t*>(Plugin_Cvar_RegisterString(mName.c_str(), "", 0, description.c_str()));
+    }
+
+    template <typename T>
+    Optional<T> get() const {
+        if (empty()) {
+            return NullOptional;
+        }
+        std::stringstream ss;
+        char buffer[1024];
+        ss << std::string(Plugin_Cvar_GetString(mCvar, buffer, sizeof(buffer)));
+        T out;
+        ss >> out;
+        if (ss.fail()) {
+            return NullOptional;
+        }
+        return out;
+    }
+
+    template <typename T>
+    void set(const T& value) const {
+        std::stringstream ss;
+        ss << value;
+        Plugin_Cvar_SetString(mCvar, ss.str().c_str());
+    }
+
+    bool empty() const noexcept { return mCvar->string[0] == 0; }
+
+private:
+    std::string mName;
+    cvar_t* mCvar;
+};
+
+class CmdLine final {
+public:
+    CmdLine() noexcept = default;
+
+    Optional<const char*> get(const int index) const noexcept {
+        if (index + mShift >= Plugin_Cmd_Argc()) {
+            return NullOptional;
+        }
+        return Plugin_Cmd_Argv(index + mShift);
+    }
+
+    template <typename T>
+    Optional<T> get(const int index) const {
+        Optional<const char*> arg = get(index);
+        if (!arg) {
+            return NullOptional;
+        }
+        std::stringstream ss;
+        ss << *arg;
+        T out;
+        ss >> out;
+        return out;
+    }
+
+    void shift(const int shift = 1) noexcept { mShift += shift; }
+
+    void reset() noexcept { mShift = 0; }
+
+    CmdLine(const CmdLine&) = delete;
+    CmdLine& operator=(const CmdLine&) = delete;
+    CmdLine(CmdLine&&) = delete;
+    CmdLine& operator=(CmdLine&&) = delete;
+
+private:
+    int mShift = 0;
+};
 
 } // namespace plugpp
 
