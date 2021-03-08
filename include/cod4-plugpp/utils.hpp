@@ -3,8 +3,11 @@
 
 #include "cod4-plugpp/PluginApi.h"
 
+#include <array>
+#include <cmath>
 #include <sstream>
 #include <string>
+#include <vector>
 
 #include <lib-optional/optional.hpp>
 
@@ -68,6 +71,74 @@ inline Optional<netadr_t> toNetAddr(const std::string& address) {
         return NullOptional;
     }
     return out;
+}
+
+class Time {
+public:
+    enum class Segment { YEARS, MONTHS, DAYS, HOURS, MINUTES, SECONDS };
+    Time(const std::uint64_t timeSec) {
+        // clang-format off
+        const int years = std::floor(timeSec / (365 * 60 * 60 * 24));
+        const int months = std::floor((timeSec - years * 365 * 60 * 60 * 24) / (30 * 60 * 60 * 24));
+        const int days = std::floor((timeSec - years * 365 * 60 * 60 * 24 - months * 30 * 60 * 60 * 24)/ (60 * 60 * 24));
+        const int hours = std::floor((timeSec - years * 365 * 60 * 60 * 24 - months * 30 * 60 * 60 * 24 - days * 60 * 60 * 24) / (60 * 60));
+        const int minutes = std::floor((timeSec - years * 365 * 60 * 60 * 24 - months * 30 * 60 * 60 * 24 - days * 60 * 60 * 24 - hours * 60 * 60)/ 60);
+        const int seconds = std::floor((timeSec - years * 365 * 60 * 60 * 24 - months * 30 * 60 * 60 * 24 - days * 60 * 60 * 24 - hours * 60 * 60 - minutes * 60));
+        // clang-format on
+        mSegments = { years, months, days, hours, minutes, seconds };
+    }
+
+    int getSegment(const Segment segment) const {
+        int index = static_cast<int>(segment);
+        if (index < 0 || index > int(mSegments.max_size()) - 1) {
+            return -1;
+        }
+        return mSegments.at(index);
+    }
+
+    std::array<int, 6> mSegments;
+};
+
+std::string toStr(const Time& time) {
+    std::vector<std::string> segments;
+
+    auto maybeAppendSegment = [&](const Time::Segment segment) {
+        const int value = time.getSegment(segment);
+        if (value <= 0) {
+            return;
+        }
+        std::stringstream ss;
+        ss << value << " ";
+        switch (segment) {
+        case Time::Segment::YEARS:
+            ss << "year";
+            break;
+        case Time::Segment::MONTHS:
+            ss << "month";
+            break;
+        case Time::Segment::DAYS:
+            ss << "day";
+            break;
+        case Time::Segment::HOURS:
+            ss << "hour";
+            break;
+        case Time::Segment::MINUTES:
+            ss << "hour";
+            break;
+        case Time::Segment::SECONDS:
+            ss << "second";
+            break;
+        }
+        if (value > 1) {
+            ss << "s";
+        }
+        segments.emplace_back(ss.str());
+    };
+
+    for (int i = static_cast<int>(Time::Segment::YEARS); i <= static_cast<int>(Time::Segment::SECONDS); ++i) {
+        maybeAppendSegment(static_cast<Time::Segment>(i));
+    }
+    return join(std::begin(segments), std::end(segments), ", ");
 }
 
 } // namespace plugpp
