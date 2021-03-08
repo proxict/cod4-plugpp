@@ -151,7 +151,7 @@ inline std::string toStr(const Time& time) {
             ss << "hour";
             break;
         case Time::Segment::MINUTES:
-            ss << "hour";
+            ss << "minute";
             break;
         case Time::Segment::SECONDS:
             ss << "second";
