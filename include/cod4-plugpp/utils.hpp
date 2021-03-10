@@ -101,6 +101,29 @@ inline Optional<netadr_t> toNetAddr(const std::string& address) {
     return out;
 }
 
+inline std::string removeColor(const std::string& str) {
+    std::string res;
+    for (std::size_t i = 0; i < str.size(); ++i) {
+        if (str.at(i) == '^' && i + 1 < str.size() && std::isdigit(str.at(i + 1))) {
+            ++i;
+            continue;
+        }
+        res += str.at(i);
+    }
+    return res;
+}
+
+inline bool isInteger(const std::string& str) {
+    for (std::size_t i = 0; i < str.size(); ++i) {
+        if (!std::isdigit(str.at(i))) {
+            if (i != 0 || str.at(i) != '-') {
+                return false;
+            }
+        }
+    }
+    return !str.empty();
+}
+
 class Time final {
 public:
     enum class Segment { YEARS, MONTHS, DAYS, HOURS, MINUTES, SECONDS };
@@ -185,7 +208,8 @@ public:
     Cvar(std::string name, const std::string& description = "") noexcept
         : mName(std::move(name)) {
         ScopedCriticalSection criticalSectionGuard;
-        mCvar = static_cast<cvar_t*>(Plugin_Cvar_RegisterString(mName.c_str(), "", 0, description.c_str()));
+        mCvar = static_cast<cvar_t*>(
+            Plugin_Cvar_RegisterString(mName.c_str(), "", 0, description.c_str()));
     }
 
     template <typename T>
