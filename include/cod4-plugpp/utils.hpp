@@ -124,6 +124,43 @@ inline bool isInteger(const std::string& str) {
     return !str.empty();
 }
 
+inline Optional<client_t*> findClient(const std::string& handle) {
+    const bool isInt = plugpp::isInteger(handle);
+    if (isInt && handle.size() <= 2) {
+        client_t* cl = Plugin_GetClientForClientNum(std::stoi(handle));
+        if (!cl || !cl->state) {
+            return NullOptional;
+        }
+        return cl;
+    }
+
+    client_t* client = nullptr;
+    int matches = 0;
+    for (int i = 0; i < Plugin_GetSlotCount(); ++i) {
+        client_t* cl = Plugin_GetClientForClientNum(i);
+        if (!cl || !cl->state) {
+            continue;
+        }
+
+        if (isInt) {
+            if (handle == std::to_string(cl->playerid)) {
+                return cl;
+            }
+        } else {
+            if (plugpp::toLower(cl->name).find(plugpp::toLower(handle)) != std::string::npos) {
+                if (++matches > 1) {
+                    return NullOptional;
+                }
+                client = cl;
+            }
+        }
+    }
+    if (matches == 1) {
+        return client;
+    }
+    return NullOptional;
+}
+
 class Time final {
 public:
     enum class Segment { YEARS, MONTHS, DAYS, HOURS, MINUTES, SECONDS };
@@ -208,8 +245,7 @@ public:
     Cvar(std::string name, const std::string& description = "") noexcept
         : mName(std::move(name)) {
         ScopedCriticalSection criticalSectionGuard;
-        mCvar = static_cast<cvar_t*>(
-            Plugin_Cvar_RegisterString(mName.c_str(), "", 0, description.c_str()));
+        mCvar = static_cast<cvar_t*>(Plugin_Cvar_RegisterString(mName.c_str(), "", 0, description.c_str()));
     }
 
     template <typename T>
