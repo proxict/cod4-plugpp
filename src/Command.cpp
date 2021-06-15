@@ -153,4 +153,10 @@ void Command::callback() {
     mImpl->callback();
 }
 
+
+CommandRemover::CommandRemover(const std::string& commandName) noexcept {
+    std::string cmd(commandName);
+    Plugin_RemoveCommand(&cmd[0]);
+}
+
 } // namespace plugpp

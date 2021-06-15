@@ -22,6 +22,10 @@ private:
     std::string mFunctionName;
 };
 
+struct CommandRemover {
+    CommandRemover(const std::string& commandName) noexcept;
+};
+
 } // namespace plugpp
 
 #endif // COD4_PLUGPP_INCLUDE_COD4_PLUGPP_COMMAND_HPP_
