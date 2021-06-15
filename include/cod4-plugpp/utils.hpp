@@ -53,6 +53,19 @@ inline std::vector<std::string> tokenize(const std::string& str, const std::stri
     return tokens;
 }
 
+inline bool startsWith(const std::string& str, const std::string& prefix) {
+    return str.size() >= prefix.size() &&
+           std::mismatch(std::begin(prefix), std::end(prefix), std::begin(str)).first == std::end(prefix);
+}
+
+inline std::string trim(const std::string& str) {
+    static constexpr const char* const whitespaces = "\t\n\v\f\r ";
+    std::string result(str);
+    result.erase(0, str.find_first_not_of(whitespaces)); // left trim
+    result.erase(str.find_last_not_of(whitespaces) + 1); // right trim
+    return result;
+}
+
 inline std::string toLower(const std::string& str) {
     std::string ret(str);
     std::transform(ret.begin(), ret.end(), ret.begin(), [](unsigned char c) { return std::tolower(c); });
