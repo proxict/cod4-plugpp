@@ -105,6 +105,27 @@ PCL void OnPlayerRemoveBan(baninfo_t* baninfo) {
     return doNoexcept([&]() { gEntry->getPlugin()->onPlayerRemoveBan(baninfo); });
 }
 
+PCL void OnPlayerGotAuthInfo(netadr_t* from,
+                             uint64_t* playerid,
+                             uint64_t* steamid,
+                             char* rejectmsg,
+                             qboolean* returnNow,
+                             client_t* cl) {
+    doNoexcept([&]() {
+        bool returnNowNative = *returnNow == qboolean::qtrue;
+        const plugpp::Kick kick =
+            gEntry->getPlugin()->onPlayerGotAuthInfo(cl, from, *playerid, *steamid, returnNowNative);
+
+        if (kick && !rejectmsg[0]) {
+            static constexpr std::size_t rejectMsgSize =
+                1024; // From sv_client.c:1662 (SV_SendClientGameState())
+            std::strncpy(rejectmsg, kick->c_str(), rejectMsgSize - 1);
+        }
+
+        *returnNow = returnNowNative ? qboolean::qtrue : qboolean::qfalse;
+    });
+}
+
 PCL void OnPlayerGetBanStatus(baninfo_t* baninfo, char* message, int len) {
     if (!message[0]) {
         doNoexcept([&]() {

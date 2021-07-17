@@ -64,6 +64,19 @@ public:
 
     virtual void onPlayerRemoveBan(baninfo_t* banInfo) { (void)banInfo; }
 
+    virtual Kick onPlayerGotAuthInfo(client_t* cl,
+                                     netadr_t* from,
+                                     uint64_t& playerid,
+                                     uint64_t& steamid,
+                                     bool& returnNow) {
+        (void)cl;
+        (void)from;
+        (void)playerid;
+        (void)steamid;
+        (void)returnNow;
+        return NoKick;
+    }
+
     virtual Kick onPlayerGetBanStatus(baninfo_t* banInfo) {
         (void)banInfo;
         return NoKick;
