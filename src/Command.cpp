@@ -3,6 +3,8 @@
 #include "cod4-plugpp/Exception.hpp"
 #include "cod4-plugpp/PluginApi.h"
 
+#include <memory>
+
 namespace plugpp {
 
 typedef void (Command::*MemberFunctionCallback)();
