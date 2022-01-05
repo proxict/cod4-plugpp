@@ -156,7 +156,8 @@ inline Optional<client_t*> findClient(const std::string& handle) {
         }
 
         if (isInt) {
-            if (handle == std::to_string(cl->playerid)) {
+            if (handle == std::to_string(cl->playerid) ||
+                (cl->steamid != 0 && handle == std::to_string(cl->steamid))) {
                 return cl;
             }
         } else {
