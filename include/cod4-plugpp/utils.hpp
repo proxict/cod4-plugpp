@@ -138,6 +138,9 @@ inline bool isInteger(const std::string& str) {
 }
 
 inline Optional<client_t*> findClient(const std::string& handle) {
+    if (handle.empty()) {
+        return NullOptional;
+    }
     const bool isInt = plugpp::isInteger(handle);
     if (isInt && handle.size() <= 2) {
         client_t* cl = Plugin_GetClientForClientNum(std::stoi(handle));
