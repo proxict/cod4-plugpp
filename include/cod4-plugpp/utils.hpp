@@ -181,7 +181,7 @@ inline Optional<client_t*> findClient(const std::string& handle) {
 class Time final {
 public:
     enum class Segment { YEARS, MONTHS, DAYS, HOURS, MINUTES, SECONDS };
-    Time(const std::uint64_t timeSec) {
+    explicit Time(const std::uint64_t timeSec) noexcept {
         // clang-format off
         const int years = std::floor(timeSec / (365 * 60 * 60 * 24));
         const int months = std::floor((timeSec - years * 365 * 60 * 60 * 24) / (30 * 60 * 60 * 24));
@@ -193,8 +193,8 @@ public:
         mSegments = { years, months, days, hours, minutes, seconds };
     }
 
-    int getSegment(const Segment segment) const {
-        int index = static_cast<int>(segment);
+    int getSegment(const Segment segment) const noexcept {
+        const int index = static_cast<int>(segment);
         if (index < 0 || index > int(mSegments.max_size()) - 1) {
             return -1;
         }
@@ -259,7 +259,7 @@ public:
 
 class Cvar final {
 public:
-    Cvar(std::string name, const std::string& description = "") noexcept
+    explicit Cvar(std::string name, const std::string& description = "") noexcept
         : mName(std::move(name)) {
         ScopedCriticalSection criticalSectionGuard;
         mCvar = static_cast<cvar_t*>(Plugin_Cvar_RegisterString(mName.c_str(), "", 0, description.c_str()));
