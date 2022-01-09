@@ -137,45 +137,69 @@ inline bool isInteger(const std::string& str) {
     return !str.empty();
 }
 
-inline Optional<client_t*> findClient(const std::string& handle) {
-    if (handle.empty()) {
+inline Optional<client_t*> getClientBySlot(const int slot) {
+    client_t* cl = Plugin_GetClientForClientNum(slot);
+    if (!cl || !cl->state) {
         return NullOptional;
     }
-    const bool isInt = plugpp::isInteger(handle);
-    if (isInt && handle.size() <= 2) {
-        client_t* cl = Plugin_GetClientForClientNum(std::stoi(handle));
-        if (!cl || !cl->state) {
-            return NullOptional;
-        }
-        return cl;
-    }
+    return cl;
+}
 
-    client_t* client = nullptr;
-    int matches = 0;
+// TODO: Custom type PlayerHandle with structured bindings support instead of std::pair
+inline std::vector<std::pair<int, client_t*>> getActiveClients() {
+    std::vector<std::pair<int, client_t*>> players;
     for (int i = 0; i < Plugin_GetSlotCount(); ++i) {
-        client_t* cl = Plugin_GetClientForClientNum(i);
-        if (!cl || !cl->state) {
-            continue;
+        if (auto client = getClientBySlot(i); client) {
+            players.emplace_back(i, *client);
         }
+    }
+    return players;
+}
 
-        if (isInt) {
-            if (handle == std::to_string(cl->playerid) ||
-                (cl->steamid != 0 && handle == std::to_string(cl->steamid))) {
-                return cl;
-            }
-        } else {
-            if (plugpp::toLower(cl->name).find(plugpp::toLower(handle)) != std::string::npos) {
-                if (++matches > 1) {
+enum class HandleType { INVALID, SLOTID, PLAYER_STEAMID, NAME };
+
+inline HandleType getHandleType(const std::string& handle) {
+    if (handle.empty()) {
+        return HandleType::INVALID;
+    } else if (handle.size() <= 2 && isInteger(handle)) {
+        return HandleType::SLOTID;
+    } else if ((handle.size() == 17 || handle.size() == 19) && isInteger(handle)) {
+        return HandleType::PLAYER_STEAMID;
+    }
+    return HandleType::NAME;
+}
+
+inline Optional<client_t*> findClient(const std::string& handle) {
+    const HandleType handleType = getHandleType(handle);
+    switch (handleType) {
+    case HandleType::INVALID:
+        return NullOptional;
+    case HandleType::SLOTID:
+        return getClientBySlot(std::stoi(handle));
+    case HandleType::PLAYER_STEAMID: {
+        const auto players = getActiveClients();
+        auto it = std::find_if(std::begin(players), std::end(players), [&handle](const auto& player) {
+            return std::to_string(player.second->playerid) == handle ||
+                   (player.second->steamid != 0 && std::to_string(player.second->steamid) == handle);
+        });
+        return it != std::end(players) ? Optional<client_t*>(it->second) : NullOptional;
+    }
+    case HandleType::NAME: {
+        client_t* cl = nullptr;
+        for (const auto& [slot, client] : getActiveClients()) {
+            if (plugpp::toLower(client->name).find(plugpp::toLower(handle)) != std::string::npos) {
+                if (!cl) {
+                    cl = client;
+                } else {
                     return NullOptional;
                 }
-                client = cl;
             }
         }
+        return cl ? Optional<client_t*>(cl) : NullOptional;
     }
-    if (matches == 1) {
-        return client;
+    default:
+        return NullOptional;
     }
-    return NullOptional;
 }
 
 class Time final {
