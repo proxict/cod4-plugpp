@@ -82,6 +82,8 @@ public:
         return NoKick;
     }
 
+    virtual void onPlayerAccessGranted(client_t* client) { (void)client; }
+
     virtual void onPreFastRestart() {}
 
     virtual void onExitLevel() {}

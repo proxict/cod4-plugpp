@@ -132,6 +132,16 @@ PCL void OnPlayerGetBanStatus(baninfo_t* baninfo, char* message, int len) {
             const plugpp::Kick kick = gEntry->getPlugin()->onPlayerGetBanStatus(baninfo);
             if (kick) {
                 std::strncpy(message, kick->c_str(), len);
+            } else {
+                for (int i = 0; i < Plugin_GetSlotCount(); ++i) {
+                    if (client_t* cl = Plugin_GetClientForClientNum(i);
+                        cl && cl->playerid == baninfo->playerid && cl->steamid == baninfo->steamid &&
+                        Plugin_NET_CompareAdr(&cl->netchan.remoteAddress, &baninfo->adr)) {
+                        return gEntry->getPlugin()->onPlayerAccessGranted(cl);
+                    }
+                }
+                Plugin_Printf("^1ERROR: Failed to call onPlayerAccessGranted() callback for %s\n",
+                              std::to_string(baninfo->playerid).c_str());
             }
         });
     }
