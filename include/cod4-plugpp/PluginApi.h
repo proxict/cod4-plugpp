@@ -22,6 +22,8 @@ void Q_strncpyz(char* dest, const char* src, int destsize);
 void SV_UpdateClientConfigInfo(client_t* cl);
 void SV_DropClientNoNotify(client_t* drop, const char* reason);
 void SV_GameSendServerCommand(int clientNum, svscmd_type type, const char* text);
+void SV_SendServerCommand(client_t* cl, const char* fmt, ...);
+void SV_SendServerCommandString(client_t* cl, int type, char* message);
 void* Z_TagMalloc(int size, int tag); // NOT 0 filled memory
 void* Z_Malloc(int size);             // returns 0 filled memory
 void* S_Malloc(int size);             // NOT 0 filled memory only for small allocations
