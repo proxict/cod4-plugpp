@@ -6,8 +6,10 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <functional>
 #include <sstream>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 #include <lib-optional/optional.hpp>
@@ -15,6 +17,15 @@
 namespace plugpp {
 
 using namespace libOptional;
+
+template <typename T, typename TSignature>
+struct IsCallable;
+
+template <typename T, typename TRet, class... TArgs>
+struct IsCallable<T, TRet(TArgs...)>
+    : std::conditional<std::is_assignable<std::function<TRet(TArgs...)>, T>::value,
+                       std::true_type,
+                       std::false_type>::type {};
 
 inline Optional<std::string> getUserInfoAttribute(const std::string& userInfo, const std::string& attrName) {
     const std::string escapedAttrName = "\\" + attrName + "\\";
@@ -38,24 +49,84 @@ inline std::string join(const T first, const T last, const std::string& separato
     return ss.str();
 }
 
-inline std::vector<std::string> tokenize(const std::string& str, const std::string& delim = " ") {
+enum class TokenizeMode {
+    INCLUDE_EMPTY_TOKENS,
+    EXCLUDE_EMPTY_TOKENS,
+};
+
+inline std::vector<std::string> tokenize(const std::string& str,
+                                         const std::string& delimiter,
+                                         const TokenizeMode mode = TokenizeMode::INCLUDE_EMPTY_TOKENS) {
     if (str.empty()) {
-        return {};
+        return mode == TokenizeMode::EXCLUDE_EMPTY_TOKENS ? std::vector<std::string>{}
+                                                          : std::vector<std::string>({ str });
+    }
+    if (delimiter.empty()) {
+        return { str };
     }
     std::vector<std::string> tokens;
     std::size_t last = 0;
-    std::size_t next = 0;
-    while ((next = str.find(delim, last)) != std::string::npos) {
-        tokens.emplace_back(str.substr(last, next - last));
-        last = next + delim.size();
+    for (std::size_t next = 0; (next = str.find(delimiter, last)) != std::string::npos;) {
+        if (mode == TokenizeMode::INCLUDE_EMPTY_TOKENS || next > last) {
+            tokens.emplace_back(str.substr(last, next - last));
+        }
+        last = next + delimiter.size();
     }
-    tokens.emplace_back(str.substr(last));
+    if (mode == TokenizeMode::INCLUDE_EMPTY_TOKENS || last < str.size()) {
+        tokens.emplace_back(str.substr(last));
+    }
     return tokens;
+}
+
+template <typename TPredicate,
+          typename...,
+          typename std::enable_if<IsCallable<TPredicate, bool(char)>::value, int>::type = 1>
+inline std::vector<std::string> tokenize(const std::string& str,
+                                         const TPredicate& predicate,
+                                         const TokenizeMode mode = TokenizeMode::INCLUDE_EMPTY_TOKENS) {
+    if (str.empty()) {
+        return mode == TokenizeMode::EXCLUDE_EMPTY_TOKENS ? std::vector<std::string>{}
+                                                          : std::vector<std::string>({ str });
+    }
+    std::vector<std::string> tokens;
+    auto last = std::begin(str);
+    for (auto next = last; (next = std::find_if(last, std::end(str), predicate)) != std::end(str);) {
+        if (mode == TokenizeMode::INCLUDE_EMPTY_TOKENS || next > last) {
+            tokens.emplace_back(str.substr(static_cast<std::size_t>(std::distance(std::begin(str), last)),
+                                           static_cast<std::size_t>(std::distance(last, next))));
+        }
+        last = next + 1;
+    }
+    if (mode == TokenizeMode::INCLUDE_EMPTY_TOKENS || last != std::end(str)) {
+        tokens.emplace_back(str.substr(static_cast<std::size_t>(std::distance(std::begin(str), last))));
+    }
+    return tokens;
+}
+
+std::vector<std::string> inline tokenize(const std::string& s,
+                                         const char delimiter,
+                                         const TokenizeMode mode = TokenizeMode::INCLUDE_EMPTY_TOKENS) {
+    return tokenize(
+        s, [delimiter](const char c) { return c == delimiter; }, mode);
 }
 
 inline bool startsWith(const std::string& str, const std::string& prefix) {
     return str.size() >= prefix.size() &&
            std::mismatch(std::begin(prefix), std::end(prefix), std::begin(str)).first == std::end(prefix);
+}
+
+template <typename T, typename... TArgs>
+[[maybe_unused]] std::ostream& serialize(std::ostream& stream, T&& first, TArgs&&... args) {
+    stream << std::forward<T>(first);
+    ((stream << std::forward<TArgs>(args)), ...);
+    return stream;
+}
+
+template <typename T, typename... TArgs>
+[[nodiscard]] std::string concatenate(T&& first, TArgs&&... args) {
+    std::stringstream ss;
+    serialize(ss, std::forward<T>(first), std::forward<TArgs>(args)...);
+    return ss.str();
 }
 
 inline std::string trim(const std::string& str) {
