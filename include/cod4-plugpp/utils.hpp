@@ -187,7 +187,8 @@ inline Optional<client_t*> findClient(const std::string& handle) {
     case HandleType::NAME: {
         client_t* cl = nullptr;
         for (const auto& [slot, client] : getActiveClients()) {
-            if (plugpp::toLower(client->name).find(plugpp::toLower(handle)) != std::string::npos) {
+            if (plugpp::toLower(removeColor(client->name)).find(plugpp::toLower(handle)) !=
+                std::string::npos) {
                 if (!cl) {
                     cl = client;
                 } else {
