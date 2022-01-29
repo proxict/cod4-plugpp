@@ -38,6 +38,19 @@ inline Optional<std::string> getUserInfoAttribute(const std::string& userInfo, c
     return userInfo.substr(valueStartPos, valueEndPos - valueStartPos);
 }
 
+inline std::string& replaceAllInplace(std::string& str, const std::string& from, const std::string& to) {
+    std::size_t pos = 0;
+    while (!from.empty() && (pos = str.find(from, pos)) != std::string::npos) {
+        str.replace(pos, from.size(), to);
+        pos += to.size();
+    }
+    return str;
+}
+
+inline std::string replaceAll(std::string str, const std::string& from, const std::string& to) {
+    return replaceAllInplace(str, from, to);
+}
+
 template <typename T>
 inline std::string join(const T first, const T last, const std::string& separator) {
     std::stringstream ss;
