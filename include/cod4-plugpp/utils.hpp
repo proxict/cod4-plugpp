@@ -2,14 +2,13 @@
 #define COD4_PLUGPP_INCLUDE_COD4_PLUGPP_UTILS_HPP_
 
 #include "cod4-plugpp/PluginApi.h"
+#include "cod4-plugpp/typeTraits.hpp"
 
 #include <algorithm>
 #include <array>
 #include <cmath>
-#include <functional>
 #include <sstream>
 #include <string>
-#include <type_traits>
 #include <vector>
 
 #include <lib-optional/optional.hpp>
@@ -17,15 +16,6 @@
 namespace plugpp {
 
 using namespace libOptional;
-
-template <typename T, typename TSignature>
-struct IsCallable;
-
-template <typename T, typename TRet, class... TArgs>
-struct IsCallable<T, TRet(TArgs...)>
-    : std::conditional<std::is_assignable<std::function<TRet(TArgs...)>, T>::value,
-                       std::true_type,
-                       std::false_type>::type {};
 
 inline Optional<std::string> getUserInfoAttribute(const std::string& userInfo, const std::string& attrName) {
     const std::string escapedAttrName = "\\" + attrName + "\\";
@@ -60,6 +50,11 @@ inline std::string join(const T first, const T last, const std::string& separato
         sep = separator.c_str();
     }
     return ss.str();
+}
+
+template <typename TContainer, typename std::enable_if<IsIterable_v<TContainer>, int>::type = 1>
+inline std::string join(const TContainer& c, const std::string& separator) {
+    return join(std::begin(c), std::end(c), separator);
 }
 
 enum class TokenizeMode {
