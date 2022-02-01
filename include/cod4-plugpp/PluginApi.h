@@ -30,4 +30,6 @@ void* S_Malloc(int size);             // NOT 0 filled memory only for small allo
 void Com_QueueEvent(int time, sysEventType_t type, int value, int value2, int ptrLength, void* ptr);
 }
 
+const char* BG_WeaponName(int weapon);
+
 #endif // COD4_PLUGPP_INCLUDE_COD4_PLUGPP_PLUGINAPI_HPP_

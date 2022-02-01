@@ -105,6 +105,22 @@ public:
         (void)ucmd;
     }
 
+    virtual void onPlayerKilled(gentity_s* self,
+                                gentity_s* inflictor,
+                                gentity_s* attacker,
+                                int damage,
+                                int meansOfDeath,
+                                int iWeapon,
+                                hitLocation_t hitLocation) {
+        (void)self;
+        (void)inflictor;
+        (void)attacker;
+        (void)damage;
+        (void)meansOfDeath;
+        (void)iWeapon;
+        (void)hitLocation;
+    }
+
     virtual ReservedSlotRequest onPlayerReservedSlotRequest(netadr_t* from) {
         (void)from;
         // TODO: Find out what's the default value

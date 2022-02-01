@@ -222,6 +222,19 @@ PCL void OnClientMoveCommand(client_t* client, usercmd_t* ucmd) {
     doNoexcept([&]() { gEntry->getPlugin()->onClientMoveCommand(client, ucmd); });
 }
 
+PCL void OnPlayerKilled(gentity_s* self,
+                        gentity_s* inflictor,
+                        gentity_s* attacker,
+                        int damage,
+                        int meansOfDeath,
+                        int iWeapon,
+                        hitLocation_t hitLocation) {
+    doNoexcept([&]() {
+        gEntry->getPlugin()->onPlayerKilled(
+            self, inflictor, attacker, damage, meansOfDeath, iWeapon, hitLocation);
+    });
+}
+
 PCL void
 OnPlayerWantReservedSlot(netadr_t* from, char* pbguid, char* userinfo, int authstate, qboolean* isallowed) {
     (void)pbguid;
