@@ -157,6 +157,11 @@ inline std::string toUpper(const std::string& str) {
     return ret;
 }
 
+template <typename T>
+detail::reverse_wrapper<T> reverse(T&& iterable) {
+    return { iterable };
+}
+
 inline std::string toStr(const netadr_t* netaddress) {
     char buffer[53];
     Plugin_NET_AdrToStringMT(const_cast<netadr_t*>(netaddress), buffer, sizeof(buffer));

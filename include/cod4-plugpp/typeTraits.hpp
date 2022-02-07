@@ -36,6 +36,24 @@ using IsIterable = decltype(detail::adlns::IsIterable<T>(0));
 template <typename T>
 inline constexpr bool IsIterable_v = IsIterable<T>::value;
 
+namespace detail {
+    template <typename T>
+    struct reverse_wrapper {
+        T& iterable;
+    };
+
+    template <typename T>
+    auto begin(reverse_wrapper<T> w) {
+        return std::rbegin(w.iterable);
+    }
+
+    template <typename T>
+    auto end(reverse_wrapper<T> w) {
+        return std::rend(w.iterable);
+    }
+
+} // namespace detail
+
 } // namespace plugpp
 
 #endif // COD4_PLUGPP_INCLUDE_COD4_PLUGPP_TYPETRAITS_HPP_
