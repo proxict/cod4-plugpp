@@ -211,7 +211,10 @@ PCL void OnClientSpawn(gentity_t* ent) {
 }
 
 PCL void OnClientEnterWorld(client_t* client) {
-    doNoexcept([&]() { gEntry->getPlugin()->onClientEnteredWorld(client); });
+    doNoexcept([&]() {
+        gEntry->getPlugin()->onClientEnteredWorld(
+            client, client->connectedTime == static_cast<unsigned int>(Plugin_GetServerTime()));
+    });
 }
 
 PCL void OnClientUserinfoChanged(client_t* client) {

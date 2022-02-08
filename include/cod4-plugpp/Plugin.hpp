@@ -96,7 +96,10 @@ public:
 
     virtual void onClientSpawn(gentity_t* entity) { (void)entity; }
 
-    virtual void onClientEnteredWorld(client_t* client) { (void)client; }
+    virtual void onClientEnteredWorld(client_t* client, bool firstTime) {
+        (void)client;
+        (void)firstTime;
+    }
 
     virtual void onClientUserInfoChanged(client_t* client) { (void)client; }
 
