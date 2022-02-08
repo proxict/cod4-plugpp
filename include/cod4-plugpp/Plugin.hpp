@@ -3,25 +3,17 @@
 
 #include "cod4-plugpp/Command.hpp"
 #include "cod4-plugpp/Exception.hpp"
+#include "cod4-plugpp/Kick.hpp"
 #include "cod4-plugpp/PluginApi.h"
 
 #include <cstdint>
 #include <functional>
 #include <string>
 
-#include <lib-optional/optional.hpp>
-
 namespace plugpp {
-
-using namespace libOptional;
-
-using KickReason = std::string;
-using Kick = Optional<KickReason>;
 
 enum class MessageVisibility { HIDE, SHOW };
 enum class ReservedSlotRequest { DENY, ALLOW };
-
-static constexpr NullOptionalT NoKick(NullOptional);
 
 class Plugin {
 public:
