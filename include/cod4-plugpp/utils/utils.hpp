@@ -1,15 +1,12 @@
 #ifndef COD4_PLUGPP_INCLUDE_COD4_PLUGPP_UTILS_HPP_
 #define COD4_PLUGPP_INCLUDE_COD4_PLUGPP_UTILS_HPP_
 
+#include "cod4-plugpp/Optional.hpp"
 #include "cod4-plugpp/typeTraits.hpp"
 
 #include <string>
 
-#include <lib-optional/optional.hpp>
-
 namespace plugpp {
-
-using namespace libOptional;
 
 inline Optional<std::string> getUserInfoAttribute(const std::string& userInfo, const std::string& attrName) {
     const std::string escapedAttrName = "\\" + attrName + "\\";

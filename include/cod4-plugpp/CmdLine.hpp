@@ -1,15 +1,12 @@
 #ifndef COD4_PLUGPP_INCLUDE_COD4_PLUGPP_CMDLINE_HPP_
 #define COD4_PLUGPP_INCLUDE_COD4_PLUGPP_CMDLINE_HPP_
 
+#include "cod4-plugpp/Optional.hpp"
 #include "cod4-plugpp/PluginApi.h"
 
 #include <sstream>
 
-#include <lib-optional/optional.hpp>
-
 namespace plugpp {
-
-using namespace libOptional;
 
 class CmdLine final {
 public:

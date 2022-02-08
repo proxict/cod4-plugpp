@@ -2,14 +2,11 @@
 #define COD4_PLUGPP_INCLUDE_COD4_PLUGPP_NETUTILS_HPP_
 
 #include "cod4-plugpp/PluginApi.h"
-
-#include <lib-optional/optional.hpp>
+#include "cod4-plugpp/Optional.hpp"
 
 #include <string>
 
 namespace plugpp {
-
-using namespace libOptional;
 
 inline std::string toStr(const netadr_t* netaddress) {
     char buffer[53];

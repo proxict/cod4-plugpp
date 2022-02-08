@@ -1,17 +1,14 @@
 #ifndef COD4_PLUGPP_INCLUDE_COD4_PLUGPP_CLIENTUTILS_HPP_
 #define COD4_PLUGPP_INCLUDE_COD4_PLUGPP_CLIENTUTILS_HPP_
 
+#include "cod4-plugpp/Optional.hpp"
 #include "cod4-plugpp/PluginApi.h"
 #include "cod4-plugpp/utils/stringUtils.hpp"
 
 #include <algorithm>
 #include <vector>
 
-#include <lib-optional/optional.hpp>
-
 namespace plugpp {
-
-using namespace libOptional;
 
 inline Optional<client_t*> getClientBySlot(const int slot) {
     client_t* cl = Plugin_GetClientForClientNum(slot);

@@ -2,17 +2,14 @@
 #define COD4_PLUGPP_INCLUDE_COD4_PLUGPP_CVAR_HPP_
 
 #include "cod4-plugpp/CriticalSection.hpp"
+#include "cod4-plugpp/Optional.hpp"
 #include "cod4-plugpp/PluginApi.h"
 
 #include <mutex>
 #include <sstream>
 #include <string>
 
-#include <lib-optional/optional.hpp>
-
 namespace plugpp {
-
-using namespace libOptional;
 
 class Cvar final {
 public:
