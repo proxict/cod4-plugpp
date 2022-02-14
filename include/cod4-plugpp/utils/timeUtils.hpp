@@ -36,13 +36,13 @@ public:
     std::array<int, 6> mSegments;
 };
 
-inline std::string toStr(const Time& time) {
+inline std::string toStr(const Time& time, const bool condensed = false) {
     std::vector<std::string> segments;
 
     auto maybeAppendSegment = [&](const Time::Segment segment) {
         const int value = time.getSegment(segment);
         if (value <= 0) {
-            return;
+            return false;
         }
         std::stringstream ss;
         ss << value << " ";
@@ -70,10 +70,14 @@ inline std::string toStr(const Time& time) {
             ss << "s";
         }
         segments.emplace_back(ss.str());
+        return true;
     };
 
-    for (int i = static_cast<int>(Time::Segment::YEARS); i <= static_cast<int>(Time::Segment::SECONDS); ++i) {
-        maybeAppendSegment(static_cast<Time::Segment>(i));
+    int stopWith = static_cast<int>(Time::Segment::SECONDS);
+    for (int i = static_cast<int>(Time::Segment::YEARS); i <= stopWith; ++i) {
+        if (maybeAppendSegment(static_cast<Time::Segment>(i)) && condensed) {
+            stopWith = std::min(stopWith, i + 1);
+        }
     }
     return join(segments, ", ");
 }
