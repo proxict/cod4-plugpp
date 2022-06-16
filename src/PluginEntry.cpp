@@ -244,10 +244,10 @@ OnPlayerWantReservedSlot(netadr_t* from, char* pbguid, char* userinfo, int auths
     (void)userinfo;
     (void)authstate;
     doNoexcept([&]() {
-        *isallowed =
-            gEntry->getPlugin()->onPlayerReservedSlotRequest(from) == plugpp::ReservedSlotRequest::ALLOW
-                ? qboolean::qtrue
-                : qboolean::qfalse;
+        *isallowed = *isallowed && gEntry->getPlugin()->onPlayerReservedSlotRequest(from) ==
+                                       plugpp::ReservedSlotRequest::ALLOW
+                         ? qboolean::qtrue
+                         : qboolean::qfalse;
     });
 }
 

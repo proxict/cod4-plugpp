@@ -118,8 +118,7 @@ public:
 
     virtual ReservedSlotRequest onPlayerReservedSlotRequest(netadr_t* from) {
         (void)from;
-        // TODO: Find out what's the default value
-        return ReservedSlotRequest::DENY;
+        return ReservedSlotRequest::ALLOW;
     }
 };
 
