@@ -22,9 +22,7 @@ private:
     std::string mFunctionName;
 };
 
-struct CommandRemover {
-    CommandRemover(const std::string& commandName) noexcept;
-};
+void removeCommand(const std::string& commandName);
 
 } // namespace plugpp
 
