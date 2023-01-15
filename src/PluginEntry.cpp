@@ -251,3 +251,11 @@ OnPlayerWantReservedSlot(netadr_t* from, char* pbguid, char* userinfo, int auths
     });
 }
 
+PCL void OnScrUsercallFunction(const char* function_name) {
+    doNoexcept([=]() { gEntry->getPlugin()->onScrUsercallFunction(function_name); });
+}
+
+PCL void OnScrUsercallMethod(const char* method_name, int clientnum) {
+    doNoexcept([=]() { gEntry->getPlugin()->onScrUsercallMethod(method_name, clientnum); });
+}
+

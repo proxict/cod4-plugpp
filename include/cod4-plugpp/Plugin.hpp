@@ -120,6 +120,13 @@ public:
         (void)from;
         return ReservedSlotRequest::ALLOW;
     }
+
+    virtual void onScrUsercallFunction(const std::string& functionName) { (void)functionName; }
+
+    virtual void onScrUsercallMethod(const std::string& methodName, int slot) {
+        (void)methodName;
+        (void)slot;
+    }
 };
 
 } // namespace plugpp
