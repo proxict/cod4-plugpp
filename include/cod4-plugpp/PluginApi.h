@@ -59,6 +59,9 @@ void* Z_TagMalloc(int size, int tag); // NOT 0 filled memory
 void* Z_Malloc(int size);             // returns 0 filled memory
 void* S_Malloc(int size);             // NOT 0 filled memory only for small allocations
 void Com_QueueEvent(int time, sysEventType_t type, int value, int value2, int ptrLength, void* ptr);
+qboolean SV_Map(const char* levelname);
+void SV_MapRestart(qboolean fastrestart);
+void SV_ScreenshotClient(client_t* cl, const char* name);
 }
 
 const char* BG_WeaponName(int weapon);
