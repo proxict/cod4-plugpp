@@ -137,18 +137,21 @@ private:
     std::function<void()> mFunctor;
 };
 
-Command::Command(std::string functionName, std::function<void()> functor)
+Command::Command(std::string functionName, std::function<void()> functor, bool replace)
     : mImpl(std::make_unique<Impl>(this, std::move(functor)))
     , mFunctionName(std::move(functionName)) {
     xcommand_t cb = mImpl->getCallback();
     if (!cb) {
         throw plugpp::Exception("Failed to register command ", functionName, " - number of available command slots exceeded");
     }
+    if (replace) {
+        removeCommand(mFunctionName);
+    }
     Plugin_AddCommand(mFunctionName.c_str(), cb, 100);
 }
 
 Command::~Command() noexcept {
-    Plugin_RemoveCommand(const_cast<char*>(mFunctionName.c_str()));
+    removeCommand(mFunctionName);
 }
 
 void Command::callback() {

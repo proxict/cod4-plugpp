@@ -9,7 +9,7 @@ namespace plugpp {
 
 class Command final {
 public:
-    Command(std::string functionName, std::function<void()> functor);
+    Command(std::string functionName, std::function<void()> functor, bool replace = false);
 
     ~Command() noexcept;
 
