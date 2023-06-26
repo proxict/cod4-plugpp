@@ -11,7 +11,8 @@
 
 namespace plugpp {
 
-inline std::string& replaceAllInplace(std::string& str, const std::string& from, const std::string& to) {
+[[maybe_unused]] inline std::string&
+replaceAllInplace(std::string& str, const std::string& from, const std::string& to) {
     std::size_t pos = 0;
     while (!from.empty() && (pos = str.find(from, pos)) != std::string::npos) {
         str.replace(pos, from.size(), to);
@@ -20,12 +21,12 @@ inline std::string& replaceAllInplace(std::string& str, const std::string& from,
     return str;
 }
 
-inline std::string replaceAll(std::string str, const std::string& from, const std::string& to) {
+[[nodiscard]] inline std::string replaceAll(std::string str, const std::string& from, const std::string& to) {
     return replaceAllInplace(str, from, to);
 }
 
 template <typename T>
-inline std::string join(const T first, const T last, const std::string& separator) {
+[[nodiscard]] inline std::string join(const T first, const T last, const std::string& separator) {
     std::stringstream ss;
     const auto* sep = "";
     for (T walk = first; walk != last; ++walk) {
@@ -36,7 +37,7 @@ inline std::string join(const T first, const T last, const std::string& separato
 }
 
 template <typename TContainer, typename std::enable_if<IsIterable_v<TContainer>, int>::type = 1>
-inline std::string join(const TContainer& c, const std::string& separator) {
+[[nodiscard]] inline std::string join(const TContainer& c, const std::string& separator) {
     return join(std::begin(c), std::end(c), separator);
 }
 
@@ -45,9 +46,10 @@ enum class TokenizeMode {
     EXCLUDE_EMPTY_TOKENS,
 };
 
-inline std::vector<std::string> tokenize(const std::string& str,
-                                         const std::string& delimiter,
-                                         const TokenizeMode mode = TokenizeMode::INCLUDE_EMPTY_TOKENS) {
+[[nodiscard]] inline std::vector<std::string>
+tokenize(const std::string& str,
+         const std::string& delimiter,
+         const TokenizeMode mode = TokenizeMode::INCLUDE_EMPTY_TOKENS) {
     if (str.empty()) {
         return mode == TokenizeMode::EXCLUDE_EMPTY_TOKENS ? std::vector<std::string>{}
                                                           : std::vector<std::string>({ str });
@@ -72,9 +74,10 @@ inline std::vector<std::string> tokenize(const std::string& str,
 template <typename TPredicate,
           typename...,
           typename std::enable_if<IsCallable<TPredicate, bool(char)>::value, int>::type = 1>
-inline std::vector<std::string> tokenize(const std::string& str,
-                                         const TPredicate& predicate,
-                                         const TokenizeMode mode = TokenizeMode::INCLUDE_EMPTY_TOKENS) {
+[[nodiscard]] inline std::vector<std::string>
+tokenize(const std::string& str,
+         const TPredicate& predicate,
+         const TokenizeMode mode = TokenizeMode::INCLUDE_EMPTY_TOKENS) {
     if (str.empty()) {
         return mode == TokenizeMode::EXCLUDE_EMPTY_TOKENS ? std::vector<std::string>{}
                                                           : std::vector<std::string>({ str });
@@ -94,16 +97,48 @@ inline std::vector<std::string> tokenize(const std::string& str,
     return tokens;
 }
 
-std::vector<std::string> inline tokenize(const std::string& s,
-                                         const char delimiter,
-                                         const TokenizeMode mode = TokenizeMode::INCLUDE_EMPTY_TOKENS) {
+[[nodiscard]] inline std::vector<std::string>
+tokenize(const std::string& s,
+         const char delimiter,
+         const TokenizeMode mode = TokenizeMode::INCLUDE_EMPTY_TOKENS) {
     return tokenize(
         s, [delimiter](const char c) { return c == delimiter; }, mode);
 }
 
-inline bool startsWith(const std::string& str, const std::string& prefix) {
+[[nodiscard]] inline bool startsWith(const std::string& str, const std::string& prefix) {
     return str.size() >= prefix.size() &&
            std::mismatch(std::begin(prefix), std::end(prefix), std::begin(str)).first == std::end(prefix);
+}
+
+template <typename T>
+[[nodiscard]] inline std::vector<std::string>
+joinQuotedArgs(const T first, const T last, const char quote = '"') {
+    bool openQuote = false;
+    std::vector<std::string> tokens;
+    for (T walk = first; walk != last; ++walk) {
+        const std::string& arg = *walk;
+        const bool oddNumberOfQuotes = std::count(std::begin(arg), std::end(arg), quote) & 1;
+        if (!openQuote) {
+            tokens.emplace_back(arg);
+        } else {
+            tokens.back().push_back(' ');
+            tokens.back() += arg;
+        }
+        openQuote = oddNumberOfQuotes != openQuote;
+
+        if (!openQuote) {
+            std::string& lastToken = tokens.back();
+            lastToken.erase(std::remove(std::begin(lastToken), std::end(lastToken), quote),
+                            std::end(lastToken));
+        }
+    }
+
+    return tokens;
+}
+
+[[nodiscard]] inline std::vector<std::string> joinQuotedArgs(const std::vector<std::string>& args,
+                                                             const char quote = '"') {
+    return joinQuotedArgs(std::begin(args), std::end(args), quote);
 }
 
 template <typename T, typename... TArgs>
@@ -120,7 +155,7 @@ template <typename T, typename... TArgs>
     return ss.str();
 }
 
-inline std::string trim(const std::string& str) {
+[[nodiscard]] inline std::string trim(const std::string& str) {
     static constexpr const char* const whitespaces = "\t\n\v\f\r ";
     std::string result(str);
     result.erase(0, str.find_first_not_of(whitespaces)); // left trim
@@ -128,19 +163,19 @@ inline std::string trim(const std::string& str) {
     return result;
 }
 
-inline std::string toLower(const std::string& str) {
+[[nodiscard]] inline std::string toLower(const std::string& str) {
     std::string ret(str);
     std::transform(ret.begin(), ret.end(), ret.begin(), [](unsigned char c) { return std::tolower(c); });
     return ret;
 }
 
-inline std::string toUpper(const std::string& str) {
+[[nodiscard]] inline std::string toUpper(const std::string& str) {
     std::string ret(str);
     std::transform(ret.begin(), ret.end(), ret.begin(), [](unsigned char c) { return std::toupper(c); });
     return ret;
 }
 
-inline std::string removeColor(const std::string& str) {
+[[nodiscard]] inline std::string removeColor(const std::string& str) {
     std::string res;
     for (std::size_t i = 0; i < str.size(); ++i) {
         if (str.at(i) == '^' && i + 1 < str.size() && std::isdigit(str.at(i + 1))) {
@@ -152,7 +187,7 @@ inline std::string removeColor(const std::string& str) {
     return res;
 }
 
-inline bool isInteger(const std::string& str) {
+[[nodiscard]] inline bool isInteger(const std::string& str) {
     for (std::size_t i = 0; i < str.size(); ++i) {
         if (!std::isdigit(str.at(i))) {
             if (i != 0 || str.at(i) != '-') {
