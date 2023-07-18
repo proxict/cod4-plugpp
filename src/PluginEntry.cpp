@@ -259,3 +259,31 @@ PCL void OnScrUsercallMethod(const char* method_name, int clientnum) {
     doNoexcept([=]() { gEntry->getPlugin()->onScrUsercallMethod(method_name, clientnum); });
 }
 
+PCL void OnModuleLoaded(client_t* client, char* fullpath, long checksum) {
+    doNoexcept([=]() { gEntry->getPlugin()->onModuleLoaded(client, fullpath, checksum); });
+}
+
+PCL void OnScreenshotArrived(client_t* client, const char* path) {
+    doNoexcept([=]() { gEntry->getPlugin()->onScreenshotArrived(client, path); });
+}
+
+// Intentionally not implementing these by default because of a slight overhead of the function call.
+// If needed, compile with -DOVERRIDE_UDP_EVENT_CALLBACKS
+
+#ifdef OVERRIDE_UDP_EVENT_CALLBACKS
+PCL void OnUdpNetEvent(netadr_t* from, void* data, int size, qboolean* returnNow) {
+    doNoexcept([&]() {
+        const qboolean returnNowOverride =
+            gEntry->getPlugin()->onUdpNetEvent(from, data, size) ? qboolean::qtrue : qboolean::qfalse;
+        *returnNow = (*returnNow || returnNowOverride) ? qboolean::qtrue : qboolean::qfalse;
+    });
+}
+
+PCL void OnUdpNetSend(netadr_t* to, void* data, int len, qboolean* returnNow) {
+    doNoexcept([&]() {
+        const qboolean returnNowOverride =
+            gEntry->getPlugin()->onUdpSend(to, data, len) ? qboolean::qtrue : qboolean::qfalse;
+        *returnNow = (*returnNow || returnNowOverride) ? qboolean::qtrue : qboolean::qfalse;
+    });
+}
+#endif

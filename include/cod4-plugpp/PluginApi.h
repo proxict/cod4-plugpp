@@ -47,6 +47,33 @@ enum SCR_TYPES {
     VAR_ENDON_LIST = 0x19
 };
 
+void MSG_Init(msg_t* buf, byte* data, int length);
+void MSG_InitReadOnly(msg_t* buf, byte* data, int length);
+void MSG_InitReadOnlySplit(msg_t* buf, byte* data, int length, byte*, int);
+void MSG_Clear(msg_t* buf);
+void MSG_BeginReading(msg_t* msg);
+void MSG_Copy(msg_t* buf, byte* data, int length, msg_t* src);
+void MSG_WriteByte(msg_t* msg, int c);
+void MSG_WriteShort(msg_t* msg, int c);
+void MSG_WriteLong(msg_t* msg, int c);
+void MSG_WriteFloat(msg_t* msg, float c);
+void MSG_WriteData(msg_t* buf, const void* data, int length);
+void MSG_WriteString(msg_t* sb, const char* s);
+void MSG_WriteBigString(msg_t* sb, const char* s);
+int MSG_ReadByte(msg_t* msg);
+int MSG_ReadShort(msg_t* msg);
+int MSG_ReadLong(msg_t* msg);
+char* MSG_ReadString(msg_t* msg, char* bigstring, int len);
+char* MSG_ReadStringLine(msg_t* msg, char* bigstring, int len);
+void MSG_ReadData(msg_t* msg, void* data, int len);
+float MSG_ReadFloat(msg_t* msg);
+void MSG_ClearLastReferencedEntity(msg_t* msg);
+void MSG_WriteBit0(msg_t* msg);
+int MSG_WriteBitsNoCompress(int d, byte* src, byte* dst, int size);
+void MSG_WriteVector(msg_t* msg, vec3_t c);
+void MSG_WriteInt64(msg_t* msg, int64_t c);
+int64_t MSG_ReadInt64(msg_t* msg);
+
 void Info_SetValueForKey(char* s, const char* key, const char* value);
 char* Info_ValueForKey(const char* s, const char* key);
 void Q_strncpyz(char* dest, const char* src, int destsize);
@@ -55,6 +82,7 @@ void SV_DropClientNoNotify(client_t* drop, const char* reason);
 void SV_GameSendServerCommand(int clientNum, svscmd_type type, const char* text);
 void SV_SendServerCommand(client_t* cl, const char* fmt, ...);
 void SV_SendServerCommandString(client_t* cl, int type, char* message);
+void SV_SendReliableServerCommand(client_t* cl, msg_t* msg);
 void* Z_TagMalloc(int size, int tag); // NOT 0 filled memory
 void* Z_Malloc(int size);             // returns 0 filled memory
 void* S_Malloc(int size);             // NOT 0 filled memory only for small allocations

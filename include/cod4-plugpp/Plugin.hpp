@@ -127,6 +127,33 @@ public:
         (void)methodName;
         (void)slot;
     }
+
+    virtual void onModuleLoaded(client_t* client, const std::string& fullpath, long checksum) {
+        (void)client;
+        (void)fullpath;
+        (void)checksum;
+    }
+
+    virtual void onScreenshotArrived(client_t* client, const std::string& path) {
+        (void)client;
+        (void)path;
+    }
+
+    /// For this function to work, compile with -DOVERRIDE_UDP_EVENT_CALLBACKS
+    virtual bool onUdpNetEvent(netadr_t* from, void* data, int size) {
+        (void)from;
+        (void)data;
+        (void)size;
+        return false;
+    }
+
+    /// For this function to work, compile with -DOVERRIDE_UDP_EVENT_CALLBACKS
+    virtual bool onUdpSend(netadr_t* to, void* data, int len) {
+        (void)to;
+        (void)data;
+        (void)len;
+        return false;
+    }
 };
 
 } // namespace plugpp
