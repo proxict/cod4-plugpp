@@ -18,7 +18,7 @@ public:
 
     template <typename TPlugin, typename... TArgs>
     void registerPlugin(TArgs&&... args) {
-        mPlugin = std::make_unique<TPlugin>(std::forward(args)...);
+        mPlugin = std::make_unique<TPlugin>(std::forward<TArgs>(args)...);
     }
 
 private:
