@@ -6,6 +6,7 @@
 namespace plugpp {
 
 using namespace libOptional;
+using libOptional::Optional;
 
 } // namespace plugpp
 

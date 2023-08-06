@@ -1,5 +1,7 @@
 #include "cod4-plugpp/PluginEntry.hpp"
 
+#include "cod4-plugpp/Exception.hpp"
+
 #include <cstring>
 
 static plugpp::PluginEntry* gEntry = nullptr;
@@ -13,6 +15,13 @@ PluginEntry::PluginEntry() {
 
 PluginEntry::~PluginEntry() {
     Plugin_Printf("^2Plugin entry destroyed\n");
+}
+
+Plugin& PluginEntry::getPlugin() {
+    if (!mPlugin) {
+        throw Exception("No plugin registered");
+    }
+    return *mPlugin.get();
 }
 } // namespace plugpp
 
