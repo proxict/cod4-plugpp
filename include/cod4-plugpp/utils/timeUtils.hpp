@@ -4,16 +4,23 @@
 #include "cod4-plugpp/utils/stringUtils.hpp"
 
 #include <array>
+#include <chrono>
 #include <cmath>
 #include <sstream>
 #include <vector>
 
 namespace plugpp {
 
-class Time final {
+/// Time duration fragmented into years, months, days, hours, minutes, and seconds.
+class TimeDuration final {
 public:
-    enum class Segment { YEARS, MONTHS, DAYS, HOURS, MINUTES, SECONDS };
-    explicit Time(const std::uint64_t timeSec) noexcept {
+    enum class Fraction { YEARS, MONTHS, DAYS, HOURS, MINUTES, SECONDS };
+
+    /// Constructs the object from the given duration
+    /// @param duration The duration to fraction.
+    template <typename TRep, typename TPeriod>
+    explicit TimeDuration(const std::chrono::duration<TRep, TPeriod>& duration) noexcept {
+        const std::uint64_t timeSec = std::chrono::duration_cast<std::chrono::seconds>(duration).count();
         // clang-format off
         const int years = std::floor(timeSec / (365 * 60 * 60 * 24));
         const int months = std::floor((timeSec - years * 365 * 60 * 60 * 24) / (30 * 60 * 60 * 24));
@@ -22,64 +29,77 @@ public:
         const int minutes = std::floor((timeSec - years * 365 * 60 * 60 * 24 - months * 30 * 60 * 60 * 24 - days * 60 * 60 * 24 - hours * 60 * 60)/ 60);
         const int seconds = std::floor((timeSec - years * 365 * 60 * 60 * 24 - months * 30 * 60 * 60 * 24 - days * 60 * 60 * 24 - hours * 60 * 60 - minutes * 60));
         // clang-format on
-        mSegments = { years, months, days, hours, minutes, seconds };
+        mFractions = { years, months, days, hours, minutes, seconds };
     }
 
-    [[nodiscard]] int getSegment(const Segment segment) const noexcept {
-        const int index = static_cast<int>(segment);
-        if (index < 0 || index > int(mSegments.max_size()) - 1) {
+    /// Gets the amount of units in the given fraction
+    /// @param fraction The fraction to get.
+    /// @returns The amount of units in the given fraction.
+    [[nodiscard]] int getFractionAmount(const Fraction fraction) const noexcept {
+        const int index = static_cast<int>(fraction);
+        if (index < 0 || index > int(mFractions.max_size()) - 1) {
             return -1;
         }
-        return mSegments.at(index);
+        return mFractions.at(index);
     }
 
-    std::array<int, 6> mSegments;
+private:
+    std::array<int, 6> mFractions;
 };
 
-[[nodiscard]] inline std::string toStr(const Time& time, const bool condensed = false) {
-    std::vector<std::string> segments;
+/// Converts the given time duration to a human readable string
+///
+/// The format of the string can be e.g., "2 months, 1 hour, 35 minutes". Only non-zero fractions are included
+/// in the output.
+///
+/// @param time The time duration to convert to string.
+/// @param condensed If true, only the 2 most significant non-zero fractions are going to be included in the
+/// output.
+/// @returns A human readable string representing the given duration.
+[[nodiscard]] inline std::string toStr(const TimeDuration& time, const bool condensed = false) {
+    std::vector<std::string> fractions;
 
-    auto maybeAppendSegment = [&](const Time::Segment segment) {
-        const int value = time.getSegment(segment);
+    auto maybeAppendFraction = [&](const TimeDuration::Fraction fraction) {
+        const int value = time.getFractionAmount(fraction);
         if (value <= 0) {
             return false;
         }
         std::stringstream ss;
         ss << value << " ";
-        switch (segment) {
-        case Time::Segment::YEARS:
+        switch (fraction) {
+        case TimeDuration::Fraction::YEARS:
             ss << "year";
             break;
-        case Time::Segment::MONTHS:
+        case TimeDuration::Fraction::MONTHS:
             ss << "month";
             break;
-        case Time::Segment::DAYS:
+        case TimeDuration::Fraction::DAYS:
             ss << "day";
             break;
-        case Time::Segment::HOURS:
+        case TimeDuration::Fraction::HOURS:
             ss << "hour";
             break;
-        case Time::Segment::MINUTES:
+        case TimeDuration::Fraction::MINUTES:
             ss << "minute";
             break;
-        case Time::Segment::SECONDS:
+        case TimeDuration::Fraction::SECONDS:
             ss << "second";
             break;
         }
         if (value > 1) {
             ss << "s";
         }
-        segments.emplace_back(ss.str());
+        fractions.emplace_back(ss.str());
         return true;
     };
 
-    int stopWith = static_cast<int>(Time::Segment::SECONDS);
-    for (int i = static_cast<int>(Time::Segment::YEARS); i <= stopWith; ++i) {
-        if (maybeAppendSegment(static_cast<Time::Segment>(i)) && condensed) {
+    int stopWith = static_cast<int>(TimeDuration::Fraction::SECONDS);
+    for (int i = static_cast<int>(TimeDuration::Fraction::YEARS); i <= stopWith; ++i) {
+        if (maybeAppendFraction(static_cast<TimeDuration::Fraction>(i)) && condensed) {
             stopWith = std::min(stopWith, i + 1);
         }
     }
-    return join(segments, ", ");
+    return join(fractions, ", ");
 }
 
 } // namespace plugpp
