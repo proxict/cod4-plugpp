@@ -10,6 +10,9 @@
 
 namespace plugpp {
 
+/// Gets a client in the given slot if the slot is occupied by a player (active client)
+/// @param slot The slot to get the client for.
+/// @returns Pointer to the client or NullOptional if the slot is vacant.
 [[nodiscard]] inline Optional<client_t*> getClientBySlot(const int slot) {
     client_t* cl = Plugin_GetClientForClientNum(slot);
     if (!cl || !cl->state) {
@@ -18,6 +21,7 @@ namespace plugpp {
     return cl;
 }
 
+/// Gets all active clients (slots occupied by players and their corresponding client structures)
 [[nodiscard]] inline std::vector<std::pair<int, client_t*>> getActiveClients() {
     std::vector<std::pair<int, client_t*>> players;
     for (int i = 0; i < Plugin_GetSlotCount(); ++i) {
@@ -28,8 +32,12 @@ namespace plugpp {
     return players;
 }
 
+/// Handle type used to find a client on the server uniquely matching the given string
 enum class HandleType { INVALID, SLOTID, PLAYER_STEAMID, NAME };
 
+/// Gets the type of @ref HandleType based on the given string
+/// @param handle A string that could represet the player's name, slot number, player ID or steam ID.
+/// @returns @ref HandleType matching the given handle string.
 [[nodiscard]] inline HandleType getHandleType(const std::string& handle) {
     if (handle.empty()) {
         return HandleType::INVALID;
@@ -41,6 +49,10 @@ enum class HandleType { INVALID, SLOTID, PLAYER_STEAMID, NAME };
     return HandleType::NAME;
 }
 
+/// Gets a client uniquely matching the given handle
+/// @param handle A string that could represet the player's name, slot number, player ID or steam ID.
+/// @returns A pointer to the client matching the given handle or NullOptional if zero or multiple players
+/// match.
 [[nodiscard]] inline Optional<client_t*> findClient(const std::string& handle) {
     const HandleType handleType = getHandleType(handle);
     switch (handleType) {
