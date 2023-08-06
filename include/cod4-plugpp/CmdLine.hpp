@@ -12,7 +12,7 @@ class CmdLine final {
 public:
     CmdLine() noexcept = default;
 
-    Optional<const char*> get(const int index) const noexcept {
+    [[nodiscard]] Optional<const char*> get(const int index) const noexcept {
         if (index + mShift >= Plugin_Cmd_Argc()) {
             return NullOptional;
         }
@@ -20,7 +20,7 @@ public:
     }
 
     template <typename T>
-    Optional<T> get(const int index) const {
+    [[nodiscard]] Optional<T> get(const int index) const {
         Optional<const char*> arg = get(index);
         if (!arg) {
             return NullOptional;

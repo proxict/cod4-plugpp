@@ -8,7 +8,7 @@
 
 namespace plugpp {
 
-inline std::string toStr(const netadr_t* netaddress) {
+[[nodiscard]] inline std::string toStr(const netadr_t* netaddress) {
     char buffer[53];
     Plugin_NET_AdrToStringMT(const_cast<netadr_t*>(netaddress), buffer, sizeof(buffer));
     std::string ip(buffer);
@@ -31,12 +31,12 @@ inline std::string toStr(const netadr_t* netaddress) {
     return ip;
 }
 
-inline bool toNetAddr(const std::string& address, netadr_t* out) {
+[[maybe_unused]] inline bool toNetAddr(const std::string& address, netadr_t* out) {
     const netadrtype_t ipType = address.find('.') != std::string::npos ? NA_IP : NA_IP6;
     return Plugin_NET_StringToAdr(address.c_str(), out, ipType) != 0;
 }
 
-inline Optional<netadr_t> toNetAddr(const std::string& address) {
+[[nodiscard]] inline Optional<netadr_t> toNetAddr(const std::string& address) {
     netadr_t out;
     if (!toNetAddr(address, &out)) {
         return NullOptional;

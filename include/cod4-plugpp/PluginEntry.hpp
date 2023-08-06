@@ -14,7 +14,7 @@ public:
 
     ~PluginEntry();
 
-    Plugin& getPlugin();
+    [[nodiscard]] Plugin& getPlugin();
 
     template <typename TPlugin, typename... TArgs>
     void registerPlugin(TArgs&&... args) {

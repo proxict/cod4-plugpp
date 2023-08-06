@@ -10,7 +10,7 @@
 
 namespace plugpp {
 
-inline Optional<client_t*> getClientBySlot(const int slot) {
+[[nodiscard]] inline Optional<client_t*> getClientBySlot(const int slot) {
     client_t* cl = Plugin_GetClientForClientNum(slot);
     if (!cl || !cl->state) {
         return NullOptional;
@@ -18,7 +18,7 @@ inline Optional<client_t*> getClientBySlot(const int slot) {
     return cl;
 }
 
-inline std::vector<std::pair<int, client_t*>> getActiveClients() {
+[[nodiscard]] inline std::vector<std::pair<int, client_t*>> getActiveClients() {
     std::vector<std::pair<int, client_t*>> players;
     for (int i = 0; i < Plugin_GetSlotCount(); ++i) {
         if (auto client = getClientBySlot(i); client) {
@@ -30,7 +30,7 @@ inline std::vector<std::pair<int, client_t*>> getActiveClients() {
 
 enum class HandleType { INVALID, SLOTID, PLAYER_STEAMID, NAME };
 
-inline HandleType getHandleType(const std::string& handle) {
+[[nodiscard]] inline HandleType getHandleType(const std::string& handle) {
     if (handle.empty()) {
         return HandleType::INVALID;
     } else if (handle.size() <= 2 && isInteger(handle)) {
@@ -41,7 +41,7 @@ inline HandleType getHandleType(const std::string& handle) {
     return HandleType::NAME;
 }
 
-inline Optional<client_t*> findClient(const std::string& handle) {
+[[nodiscard]] inline Optional<client_t*> findClient(const std::string& handle) {
     const HandleType handleType = getHandleType(handle);
     switch (handleType) {
     case HandleType::INVALID:

@@ -25,7 +25,7 @@ public:
         mSegments = { years, months, days, hours, minutes, seconds };
     }
 
-    int getSegment(const Segment segment) const noexcept {
+    [[nodiscard]] int getSegment(const Segment segment) const noexcept {
         const int index = static_cast<int>(segment);
         if (index < 0 || index > int(mSegments.max_size()) - 1) {
             return -1;
@@ -36,7 +36,7 @@ public:
     std::array<int, 6> mSegments;
 };
 
-inline std::string toStr(const Time& time, const bool condensed = false) {
+[[nodiscard]] inline std::string toStr(const Time& time, const bool condensed = false) {
     std::vector<std::string> segments;
 
     auto maybeAppendSegment = [&](const Time::Segment segment) {

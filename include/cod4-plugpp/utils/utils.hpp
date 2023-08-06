@@ -8,7 +8,8 @@
 
 namespace plugpp {
 
-inline Optional<std::string> getUserInfoAttribute(const std::string& userInfo, const std::string& attrName) {
+[[nodiscard]] inline Optional<std::string> getUserInfoAttribute(const std::string& userInfo,
+                                                                const std::string& attrName) {
     const std::string escapedAttrName = "\\" + attrName + "\\";
     const std::size_t attrPos = userInfo.find(escapedAttrName);
     if (attrPos == std::string::npos) {
@@ -20,7 +21,7 @@ inline Optional<std::string> getUserInfoAttribute(const std::string& userInfo, c
 }
 
 template <typename T>
-detail::reverse_wrapper<T> reverse(T&& iterable) {
+[[nodiscard]] detail::reverse_wrapper<T> reverse(T&& iterable) {
     return { iterable };
 }
 
