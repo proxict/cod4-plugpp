@@ -4,6 +4,7 @@
 #include <memory>
 #include <utility>
 
+#include "cod4-plugpp/Exception.hpp"
 #include "cod4-plugpp/Plugin.hpp"
 
 namespace plugpp {
@@ -14,11 +15,19 @@ public:
 
     ~PluginEntry();
 
-    Plugin* getPlugin() { return mPlugin.get(); }
+    Plugin& getPlugin() {
+        if (!mPlugin) {
+            throw Exception("No plugin registered");
+        }
+        return *mPlugin.get();
+    }
 
     template <typename TPlugin, typename... TArgs>
     void registerPlugin(TArgs&&... args) {
         mPlugin = std::make_unique<TPlugin>(std::forward<TArgs>(args)...);
+        if (!mPlugin) {
+            throw Exception("Failed to register plugin");
+        }
     }
 
 private:
