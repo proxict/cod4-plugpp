@@ -8,6 +8,9 @@
 
 namespace plugpp {
 
+/// Gets an attribute's value from the given userinfo string.
+/// @param userInfo The userinfo string to get the value from. It's a backslash separated key-value list.
+/// @param attrName Name of the attribute to get the value of.
 [[nodiscard]] inline Optional<std::string> getUserInfoAttribute(const std::string& userInfo,
                                                                 const std::string& attrName) {
     const std::string escapedAttrName = "\\" + attrName + "\\";
@@ -20,6 +23,9 @@ namespace plugpp {
     return userInfo.substr(valueStartPos, valueEndPos - valueStartPos);
 }
 
+/// Gets a reverse iterator for the given iterable object.
+/// @param iterable The object to get a reverse iterator of.
+/// @returns A reversed iterator for the given object.
 template <typename T>
 [[nodiscard]] detail::reverse_wrapper<T> reverse(T&& iterable) {
     return { iterable };
