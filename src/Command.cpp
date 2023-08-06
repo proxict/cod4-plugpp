@@ -50,46 +50,27 @@ private:
     static void contextualStaticFunction() { staticInvoke(TContext); }
 };
 
-// clang-format off
-static CallbackBase* gCallbackInstances[] = {
-    new DynamicCallback<0>(),
-    new DynamicCallback<1>(),
-    new DynamicCallback<2>(),
-    new DynamicCallback<3>(),
-    new DynamicCallback<4>(),
-    new DynamicCallback<5>(),
-    new DynamicCallback<6>(),
-    new DynamicCallback<7>(),
-    new DynamicCallback<8>(),
-    new DynamicCallback<9>(),
-    new DynamicCallback<10>(),
-    new DynamicCallback<11>(),
-    new DynamicCallback<12>(),
-    new DynamicCallback<13>(),
-    new DynamicCallback<14>(),
-    new DynamicCallback<15>(),
-    new DynamicCallback<16>(),
-    new DynamicCallback<17>(),
-    new DynamicCallback<18>(),
-    new DynamicCallback<19>(),
-};
-static constexpr const int NUMBER_OF_INSTANCES = sizeof(gCallbackInstances) / sizeof(gCallbackInstances[0]);
-// clang-format on
-
-extern "C" __attribute__((destructor)) void destructGlobalObjects() {
-    for (int i = 0; i < NUMBER_OF_INSTANCES; ++i) {
-        if (gCallbackInstances[i]) {
-            delete gCallbackInstances[i];
-            gCallbackInstances[i] = nullptr;
-        }
+namespace detail {
+    template <std::size_t TCount, std::size_t... TIndices>
+    auto createDynamicCallbackInstances(std::index_sequence<TIndices...>) {
+        return std::array<std::unique_ptr<CallbackBase>, TCount>{
+            { std::make_unique<DynamicCallback<TIndices>>()... }
+        };
     }
+} // namespace detail
+
+template <std::size_t TCount>
+auto createDynamicCallbackInstances() {
+    return detail::createDynamicCallbackInstances<TCount>(std::make_index_sequence<TCount>{});
 }
+
+static auto gCallbackInstances = createDynamicCallbackInstances<20>();
 
 class MemberFunctionCallbackWrapper {
 public:
     MemberFunctionCallbackWrapper(Command* instance, MemberFunctionCallback method) {
-        for (mContext = 0; mContext < NUMBER_OF_INSTANCES; ++mContext) {
-            mCallback = gCallbackInstances[mContext]->reserve(instance, method);
+        for (mContext = 0; mContext < gCallbackInstances.size(); ++mContext) {
+            mCallback = gCallbackInstances.at(mContext)->reserve(instance, method);
             if (mCallback) {
                 break;
             }
@@ -98,7 +79,7 @@ public:
 
     ~MemberFunctionCallbackWrapper() noexcept {
         if (mCallback) {
-            gCallbackInstances[mContext]->release();
+            gCallbackInstances.at(mContext)->release();
         }
     }
 
@@ -107,7 +88,7 @@ public:
 
 private:
     xcommand_t mCallback = nullptr;
-    int mContext;
+    std::size_t mContext;
 
 private:
     MemberFunctionCallbackWrapper(const MemberFunctionCallbackWrapper& os);
@@ -142,7 +123,8 @@ Command::Command(std::string functionName, std::function<void()> functor, bool r
     , mFunctionName(std::move(functionName)) {
     xcommand_t cb = mImpl->getCallback();
     if (!cb) {
-        throw plugpp::Exception("Failed to register command ", functionName, " - number of available command slots exceeded");
+        throw plugpp::Exception(
+            "Failed to register command ", functionName, " - number of available command slots exceeded");
     }
     if (replace) {
         removeCommand(mFunctionName);
