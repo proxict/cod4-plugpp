@@ -7,9 +7,18 @@
 
 namespace plugpp {
 
+/// Creates a new command that can be issued from the server's command line.
+///
+/// @warning There is a limitation of only 20 commands per plugin that can be registered.
 class Command final {
 public:
-    Command(std::string functionName, std::function<void()> functor, bool replace = false);
+    /// Registeres the command and its callback
+    /// @param commandName The name of the command to register.
+    /// @param callback The callback that's going to be called when the command gets issued.
+    /// @param replace If true and a command with the given name already exists, replace its callback with the
+    /// supplied one. If false and the command already exists, the callback is not going to be replaced.
+    /// @throws plugpp::Exception if the number of registered commands (20) is exceeded.
+    Command(std::string commandName, std::function<void()> callback, bool replace = false);
 
     ~Command() noexcept;
 
@@ -19,7 +28,7 @@ private:
     class Impl;
     std::unique_ptr<Impl> mImpl;
 
-    std::string mFunctionName;
+    std::string mCommandName;
 };
 
 void removeCommand(const std::string& commandName);
