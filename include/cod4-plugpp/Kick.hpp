@@ -7,9 +7,13 @@
 
 namespace plugpp {
 
+/// Represents a player kick reason for pluin's callbacks that can optionally return a kick.
 using KickReason = std::string;
+
+/// Represents a player kick with a reason for pluin's callbacks that can optionally return a kick.
 using Kick = Optional<KickReason>;
 
+/// Represents a granted access for pluin's callbacks that can optionally return a kick.
 inline constexpr NullOptionalT NoKick(NullOptional);
 
 } // namespace plugpp
