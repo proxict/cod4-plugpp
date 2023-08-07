@@ -93,10 +93,14 @@ private:
         return true;
     };
 
-    int stopWith = static_cast<int>(TimeDuration::Fraction::SECONDS);
-    for (int i = static_cast<int>(TimeDuration::Fraction::YEARS); i <= stopWith; ++i) {
-        if (maybeAppendFraction(static_cast<TimeDuration::Fraction>(i)) && condensed) {
-            stopWith = std::min(stopWith, i + 1);
+    static auto toInt = [](TimeDuration::Fraction fraction) { return static_cast<int>(fraction); };
+    static auto toFraction = [](int fraction) { return static_cast<TimeDuration::Fraction>(fraction); };
+
+    int fractionsAdded = 0;
+    for (auto i = toInt(TimeDuration::Fraction::YEARS); i <= toInt(TimeDuration::Fraction::SECONDS); ++i) {
+        fractionsAdded += maybeAppendFraction(toFraction(i));
+        if (condensed && fractionsAdded >= 2) {
+            break;
         }
     }
     return join(fractions, ", ");
