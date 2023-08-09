@@ -3,6 +3,7 @@
 #include "cod4-plugpp/Exception.hpp"
 #include "cod4-plugpp/PluginApi.h"
 
+#include <array>
 #include <memory>
 
 namespace plugpp {
@@ -64,7 +65,12 @@ auto createDynamicCallbackInstances() {
     return detail::createDynamicCallbackInstances<TCount>(std::make_index_sequence<TCount>{});
 }
 
-static auto gCallbackInstances = createDynamicCallbackInstances<20>();
+#ifdef PLUGPP_MAX_FUNCTIONS
+static constexpr std::size_t MAX_FUNCTIONS = (PLUGPP_MAX_FUNCTIONS);
+#else
+static constexpr std::size_t MAX_FUNCTIONS = 20;
+#endif
+static auto gCallbackInstances = createDynamicCallbackInstances<MAX_FUNCTIONS>();
 
 class MemberFunctionCallbackWrapper {
 public:
