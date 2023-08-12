@@ -214,6 +214,14 @@ PCL void OnPostFastRestart() {
     doNoexcept([]() { gEntry->getPlugin().onPostFastRestart(); });
 }
 
+PCL void OnPreGameRestart(int savepersist) {
+    doNoexcept([=]() { gEntry->getPlugin().onPreGameRestart(savepersist); });
+}
+
+PCL void OnPostGameRestart(int savepersist) {
+    doNoexcept([=]() { gEntry->getPlugin().onPostGameRestart(savepersist); });
+}
+
 PCL void OnSpawnServer() {
     doNoexcept([]() { gEntry->getPlugin().onSpawnServer(); });
 }
