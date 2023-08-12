@@ -175,8 +175,8 @@ public:
 
     /// Gets called when the player enteres the world
     ///
-    /// Entering the world usually means that the player gets presented with the mod's screen where they can
-    /// join a team, select a class, etc.
+    /// Entering the world means that the world for the player is presented (when the player joins the server
+    /// or when a new round starts).
     ///
     /// @param client The client who entered the world.
     /// @param firstTime true if this was the first time the player has entered the world over the period of
