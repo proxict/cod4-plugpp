@@ -3,6 +3,7 @@
 #include "cod4-plugpp/Exception.hpp"
 
 #include <cstring>
+#include <type_traits>
 
 static plugpp::PluginEntry* gEntry = nullptr;
 
@@ -26,12 +27,10 @@ Plugin& PluginEntry::getPlugin() {
 } // namespace plugpp
 
 template <typename TCallable>
-typename std::enable_if<std::is_same<typename std::result_of<TCallable()>::type, void>::value, void>::type
-callableError() {}
+std::enable_if_t<std::is_same_v<std::invoke_result_t<TCallable>, void>, void> callableError() {}
 
 template <typename TCallable>
-typename std::enable_if<std::is_same<typename std::result_of<TCallable()>::type, int>::value, int>::type
-callableError() {
+std::enable_if_t<std::is_same_v<std::invoke_result_t<TCallable>, int>, int> callableError() {
     return -1;
 }
 
