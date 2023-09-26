@@ -164,10 +164,10 @@ public:
     virtual void onPostFastRestart() {}
 
     /// Gets called before game restart (usually a round restart)
-    virtual void onPreGameRestart(int savepersist) {}
+    virtual void onPreGameRestart(int savepersist) { (void)savepersist; }
 
     /// Gets called after game restart (usually a round restart)
-    virtual void onPostGameRestart(int savepersist) {}
+    virtual void onPostGameRestart(int savepersist) { (void)savepersist; }
 
     /// Gets called at the beginning of a level (beginning of a map)
     virtual void onSpawnServer() {}
