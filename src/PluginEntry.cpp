@@ -244,6 +244,10 @@ PCL void OnClientUserinfoChanged(client_t* client) {
     doNoexcept([&]() { gEntry->getPlugin().onClientUserInfoChanged(client); });
 }
 
+PCL void OnClientCommand(client_t* client, const char* command) {
+    doNoexcept([&]() { gEntry->getPlugin().onClientCommand(client, command); });
+}
+
 PCL void OnClientMoveCommand(client_t* client, usercmd_t* ucmd) {
     doNoexcept([&]() { gEntry->getPlugin().onClientMoveCommand(client, ucmd); });
 }

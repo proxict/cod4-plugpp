@@ -200,6 +200,14 @@ public:
     /// @param client The player whose userinfo has changed.
     virtual void onClientUserInfoChanged(client_t* client) { (void)client; }
 
+    /// Gets called whenever a client sends a command
+    /// @param client The client who sent the command.
+    /// @param command The command.
+    virtual void onClientCommand(client_t* client, const char* command) {
+        (void)client;
+        (void)command;
+    }
+
     /// Gets called whenever a client sends a move command
     /// @param client The client who sent the move command.
     /// @param ucmd The move command.
