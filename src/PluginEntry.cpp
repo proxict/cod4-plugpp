@@ -278,6 +278,10 @@ OnPlayerWantReservedSlot(netadr_t* from, char* pbguid, char* userinfo, int auths
     });
 }
 
+PCL void OnFilesystemStarted(const searchpath_t* searchpaths) {
+    doNoexcept([=]() { gEntry->getPlugin().onFsStarted(searchpaths); });
+}
+
 PCL void OnScrUsercallFunction(const char* function_name) {
     doNoexcept([=]() { gEntry->getPlugin().onScrUsercallFunction(function_name); });
 }

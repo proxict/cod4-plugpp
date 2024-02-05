@@ -4,6 +4,46 @@
 #include "pinc.h"
 
 extern "C" {
+typedef void* unzFile;
+
+typedef struct fileInPack_s {
+    unsigned long pos;         // file info position in zip
+    char* name;                // name of the file
+    struct fileInPack_s* next; // next file in the hash
+} fileInPack_t;
+
+typedef struct {                  // Verified
+    char pakFilename[MAX_OSPATH]; // c:\quake3\baseq3\pak0.pk3
+    char pakBasename[MAX_OSPATH]; // pak0
+    char pakGamename[MAX_OSPATH]; // baseq3
+    unzFile handle;               // handle to zip file +0x300
+    int checksum;                 // regular checksum
+    int pure_checksum;            // checksum for pure
+    int hasOpenFile;
+    int numfiles;              // number of files in pk3
+    int referenced;            // referenced file flags
+    int hashSize;              // hash table size (power of 2)		+0x318
+    fileInPack_t** hashTable;  // hash table	+0x31c
+    fileInPack_t* buildBuffer; // buffer with the filenames etc. +0x320
+} pack_t;
+
+typedef struct {              // Verified
+    char path[MAX_OSPATH];    // c:\quake3
+    char gamedir[MAX_OSPATH]; // baseq3
+} directory_t;
+
+typedef struct searchpath_s { // Verified
+    struct searchpath_s* next;
+    pack_t* pack; // only one of pack / dir will be non NULL
+    directory_t* dir;
+    qboolean localized;
+    int val_2;
+    int val_3;
+    int langIndex;
+} searchpath_t;
+
+extern int fs_checksumFeed;
+
 enum svscmd_type {
     SV_CMD_CAN_IGNORE = 0x0,
     SV_CMD_RELIABLE = 0x1,

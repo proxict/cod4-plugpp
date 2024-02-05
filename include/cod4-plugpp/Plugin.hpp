@@ -250,6 +250,10 @@ public:
         return ReservedSlotRequest::ALLOW;
     }
 
+    /// Gets called when the server's filesystem is started
+    /// @param searchpaths The paths the filesystem searches in
+    virtual void onFsStarted(const searchpath_t* searchpaths) { (void)searchpaths; }
+
     /// Gets called when a `usercall` function gets called from a GSC script.
     ///
     /// Function arguments passed from the GSC script can be acquired using the @ref Plugin_Scr_GetNumParam(),
