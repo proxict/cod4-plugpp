@@ -159,6 +159,14 @@ tokenize(const std::string& s,
            std::mismatch(std::begin(prefix), std::end(prefix), std::begin(str)).first == std::end(prefix);
 }
 
+/// Checks if a string ends with the given substring
+/// @param str The checked string.
+/// @param suffix The suffix to search for.
+/// @returns true if the given string ends with the given suffix, false otherwise.
+[[nodiscard]] inline bool endsWith(const std::string& str, const std::string& suffix) {
+    return str.size() >= suffix.size() && str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
+}
+
 /// Joins tokens tokenized by a space (usually CLI arguments) that are tied together by quotes.
 ///
 /// @warning This function doesn't support escaped quotes.
