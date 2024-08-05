@@ -35,19 +35,19 @@ std::enable_if_t<std::is_same_v<std::invoke_result_t<TCallable>, int>, int> call
 }
 
 template <typename TCallable>
-typename std::result_of<TCallable()>::type doNoexcept(TCallable&& callable) noexcept {
+typename std::result_of<TCallable()>::type doNoexcept(const char* funcName, TCallable&& callable) noexcept {
     try {
         return callable();
     } catch (const std::exception& e) {
-        Plugin_Printf("^1Exception raised: %s\n", e.what());
+        Plugin_Printf("^1Exception raised in %s: %s\n", funcName, e.what());
     } catch (...) {
-        Plugin_Printf("^1Unknown exception raised during plugin loading\n");
+        Plugin_Printf("^1Unknown exception raised in %s during plugin loading\n", funcName);
     }
     return callableError<TCallable>();
 }
 
 PCL int OnInit() {
-    return doNoexcept([]() {
+    return doNoexcept(__FUNCTION__, []() {
         gEntry = gEntry ? gEntry : new plugpp::PluginEntry();
         if (!gEntry) {
             Plugin_Printf("^1Failed to initialize plugin entry\n");
@@ -58,7 +58,7 @@ PCL int OnInit() {
 }
 
 PCL void OnUnload() {
-    doNoexcept([]() {
+    doNoexcept(__FUNCTION__, []() {
         if (gEntry) {
             delete gEntry;
             gEntry = nullptr;
@@ -67,7 +67,7 @@ PCL void OnUnload() {
 }
 
 PCL void OnTerminate() {
-    doNoexcept([]() { gEntry->getPlugin().onTerminate(); });
+    doNoexcept(__FUNCTION__, []() { gEntry->getPlugin().onTerminate(); });
 }
 
 PCL void OnPlayerConnect(int clientnum,
@@ -88,7 +88,7 @@ PCL void OnPlayerConnect(int clientnum,
     (void)deniedmsgbufmaxlen;
 
     if (!deniedmsg[0]) {
-        doNoexcept([&]() {
+        doNoexcept(__FUNCTION__, [&]() {
             const plugpp::Kick kick = gEntry->getPlugin().onPlayerConnect(clientnum, netaddress, userinfo);
             if (kick) {
                 std::strcpy(deniedmsg, kick->c_str());
@@ -98,15 +98,15 @@ PCL void OnPlayerConnect(int clientnum,
 }
 
 PCL void OnPlayerDC(client_t* client, const char* reason) {
-    doNoexcept([&]() { gEntry->getPlugin().onPlayerDisconnect(client, reason); });
+    doNoexcept(__FUNCTION__, [&]() { gEntry->getPlugin().onPlayerDisconnect(client, reason); });
 }
 
 PCL void OnPlayerAddBan(baninfo_t* baninfo) {
-    doNoexcept([&]() { gEntry->getPlugin().onPlayerAddBan(baninfo); });
+    doNoexcept(__FUNCTION__, [&]() { gEntry->getPlugin().onPlayerAddBan(baninfo); });
 }
 
 PCL void OnPlayerRemoveBan(baninfo_t* baninfo) {
-    return doNoexcept([&]() { gEntry->getPlugin().onPlayerRemoveBan(baninfo); });
+    return doNoexcept(__FUNCTION__, [&]() { gEntry->getPlugin().onPlayerRemoveBan(baninfo); });
 }
 
 PCL void OnPlayerGotAuthInfo(netadr_t* from,
@@ -115,7 +115,7 @@ PCL void OnPlayerGotAuthInfo(netadr_t* from,
                              char* rejectmsg,
                              qboolean* returnNow,
                              client_t* cl) {
-    doNoexcept([&]() {
+    doNoexcept(__FUNCTION__, [&]() {
         bool returnNowNative = *returnNow == qboolean::qtrue;
         const plugpp::Kick kick =
             gEntry->getPlugin().onPlayerGotAuthInfo(cl, from, *playerid, *steamid, returnNowNative);
@@ -132,7 +132,7 @@ PCL void OnPlayerGotAuthInfo(netadr_t* from,
 
 PCL void OnPlayerGetBanStatus(baninfo_t* baninfo, char* message, int len) {
     if (!message[0]) {
-        doNoexcept([&]() {
+        doNoexcept(__FUNCTION__, [&]() {
             const plugpp::Kick kick = gEntry->getPlugin().onPlayerGetBanStatus(baninfo);
             if (kick) {
                 std::strncpy(message, kick->c_str(), len);
@@ -159,7 +159,7 @@ PCL void OnInfoRequest(pluginInfo_t* info) {
     Q_strncpyz(info->fullName, "C++ Plugin API Wrapper", sizeof(info->fullName));
     Q_strncpyz(info->shortDescription, "C++ wrapper for CoD4x plugin API", sizeof(info->shortDescription));
     Q_strncpyz(info->longDescription, "C++ wrapper for CoD4x plugin API", sizeof(info->longDescription));
-    doNoexcept([&]() {
+    doNoexcept(__FUNCTION__, [&]() {
         if (gEntry) {
             plugpp::PluginInfo overrideInfo = gEntry->getPlugin().onPluginInfoRequest();
             if (overrideInfo.majorVersion) {
@@ -186,7 +186,7 @@ PCL void OnInfoRequest(pluginInfo_t* info) {
 }
 
 PCL void OnMessageSent(char* message, int slot, qboolean* show, int mode) {
-    doNoexcept([&]() {
+    doNoexcept(__FUNCTION__, [&]() {
         while (message && *message < 0x20) {
             ++message;
         }
@@ -202,54 +202,54 @@ PCL void OnMessageSent(char* message, int slot, qboolean* show, int mode) {
 }
 
 PCL void OnPreFastRestart() {
-    doNoexcept([]() { gEntry->getPlugin().onPreFastRestart(); });
+    doNoexcept(__FUNCTION__, []() { gEntry->getPlugin().onPreFastRestart(); });
 }
 
 PCL void OnExitLevel() {
-    doNoexcept([]() { gEntry->getPlugin().onExitLevel(); });
+    doNoexcept(__FUNCTION__, []() { gEntry->getPlugin().onExitLevel(); });
 }
 
 PCL void OnPostFastRestart() {
-    doNoexcept([]() { gEntry->getPlugin().onPostFastRestart(); });
+    doNoexcept(__FUNCTION__, []() { gEntry->getPlugin().onPostFastRestart(); });
 }
 
 PCL void OnPreGameRestart(int savepersist) {
-    doNoexcept([=]() { gEntry->getPlugin().onPreGameRestart(savepersist); });
+    doNoexcept(__FUNCTION__, [=]() { gEntry->getPlugin().onPreGameRestart(savepersist); });
 }
 
 PCL void OnPostGameRestart(int savepersist) {
-    doNoexcept([=]() { gEntry->getPlugin().onPostGameRestart(savepersist); });
+    doNoexcept(__FUNCTION__, [=]() { gEntry->getPlugin().onPostGameRestart(savepersist); });
 }
 
 PCL void OnSpawnServer() {
-    doNoexcept([]() { gEntry->getPlugin().onSpawnServer(); });
+    doNoexcept(__FUNCTION__, []() { gEntry->getPlugin().onSpawnServer(); });
 }
 
 PCL void OnFrame() {
-    doNoexcept([]() { gEntry->getPlugin().onFrame(); });
+    doNoexcept(__FUNCTION__, []() { gEntry->getPlugin().onFrame(); });
 }
 
 PCL void OnClientSpawn(gentity_t* ent) {
-    doNoexcept([&]() { gEntry->getPlugin().onClientSpawn(ent); });
+    doNoexcept(__FUNCTION__, [&]() { gEntry->getPlugin().onClientSpawn(ent); });
 }
 
 PCL void OnClientEnterWorld(client_t* client) {
-    doNoexcept([&]() {
+    doNoexcept(__FUNCTION__, [&]() {
         gEntry->getPlugin().onClientEnteredWorld(
             client, client->connectedTime == static_cast<unsigned int>(Plugin_GetServerTime()));
     });
 }
 
 PCL void OnClientUserinfoChanged(client_t* client) {
-    doNoexcept([&]() { gEntry->getPlugin().onClientUserInfoChanged(client); });
+    doNoexcept(__FUNCTION__, [&]() { gEntry->getPlugin().onClientUserInfoChanged(client); });
 }
 
 PCL void OnClientCommand(client_t* client, const char* command) {
-    doNoexcept([&]() { gEntry->getPlugin().onClientCommand(client, command); });
+    doNoexcept(__FUNCTION__, [&]() { gEntry->getPlugin().onClientCommand(client, command); });
 }
 
 PCL void OnClientMoveCommand(client_t* client, usercmd_t* ucmd) {
-    doNoexcept([&]() { gEntry->getPlugin().onClientMoveCommand(client, ucmd); });
+    doNoexcept(__FUNCTION__, [&]() { gEntry->getPlugin().onClientMoveCommand(client, ucmd); });
 }
 
 PCL void OnPlayerKilled(gentity_s* self,
@@ -259,7 +259,7 @@ PCL void OnPlayerKilled(gentity_s* self,
                         int meansOfDeath,
                         int iWeapon,
                         hitLocation_t hitLocation) {
-    doNoexcept([&]() {
+    doNoexcept(__FUNCTION__, [&]() {
         gEntry->getPlugin().onPlayerKilled(
             self, inflictor, attacker, damage, meansOfDeath, iWeapon, hitLocation);
     });
@@ -270,7 +270,7 @@ OnPlayerWantReservedSlot(netadr_t* from, char* pbguid, char* userinfo, int auths
     (void)pbguid;
     (void)userinfo;
     (void)authstate;
-    doNoexcept([&]() {
+    doNoexcept(__FUNCTION__, [&]() {
         *isallowed = *isallowed && gEntry->getPlugin().onPlayerReservedSlotRequest(from) ==
                                        plugpp::ReservedSlotRequest::ALLOW
                          ? qboolean::qtrue
@@ -279,23 +279,23 @@ OnPlayerWantReservedSlot(netadr_t* from, char* pbguid, char* userinfo, int auths
 }
 
 PCL void OnFilesystemStarted(const searchpath_t* searchpaths) {
-    doNoexcept([=]() { gEntry->getPlugin().onFsStarted(searchpaths); });
+    doNoexcept(__FUNCTION__, [=]() { gEntry->getPlugin().onFsStarted(searchpaths); });
 }
 
 PCL void OnScrUsercallFunction(const char* function_name) {
-    doNoexcept([=]() { gEntry->getPlugin().onScrUsercallFunction(function_name); });
+    doNoexcept(__FUNCTION__, [=]() { gEntry->getPlugin().onScrUsercallFunction(function_name); });
 }
 
 PCL void OnScrUsercallMethod(const char* method_name, int clientnum) {
-    doNoexcept([=]() { gEntry->getPlugin().onScrUsercallMethod(method_name, clientnum); });
+    doNoexcept(__FUNCTION__, [=]() { gEntry->getPlugin().onScrUsercallMethod(method_name, clientnum); });
 }
 
 PCL void OnModuleLoaded(client_t* client, char* fullpath, long checksum) {
-    doNoexcept([=]() { gEntry->getPlugin().onModuleLoaded(client, fullpath, checksum); });
+    doNoexcept(__FUNCTION__, [=]() { gEntry->getPlugin().onModuleLoaded(client, fullpath, checksum); });
 }
 
 PCL void OnScreenshotArrived(client_t* client, const char* path) {
-    doNoexcept([=]() { gEntry->getPlugin().onScreenshotArrived(client, path); });
+    doNoexcept(__FUNCTION__, [=]() { gEntry->getPlugin().onScreenshotArrived(client, path); });
 }
 
 // Intentionally not implementing these by default because of a slight overhead of the function call.
@@ -303,7 +303,7 @@ PCL void OnScreenshotArrived(client_t* client, const char* path) {
 
 #ifdef OVERRIDE_UDP_EVENT_CALLBACKS
 PCL void OnUdpNetEvent(netadr_t* from, void* data, int size, qboolean* returnNow) {
-    doNoexcept([&]() {
+    doNoexcept(__FUNCTION__, [&]() {
         const qboolean returnNowOverride =
             gEntry->getPlugin().onUdpNetEvent(from, data, size) ? qboolean::qtrue : qboolean::qfalse;
         *returnNow = (*returnNow || returnNowOverride) ? qboolean::qtrue : qboolean::qfalse;
@@ -311,7 +311,7 @@ PCL void OnUdpNetEvent(netadr_t* from, void* data, int size, qboolean* returnNow
 }
 
 PCL void OnUdpNetSend(netadr_t* to, void* data, int len, qboolean* returnNow) {
-    doNoexcept([&]() {
+    doNoexcept(__FUNCTION__, [&]() {
         const qboolean returnNowOverride =
             gEntry->getPlugin().onUdpSend(to, data, len) ? qboolean::qtrue : qboolean::qfalse;
         *returnNow = (*returnNow || returnNowOverride) ? qboolean::qtrue : qboolean::qfalse;
