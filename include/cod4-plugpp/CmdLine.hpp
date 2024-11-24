@@ -2,7 +2,7 @@
 #define COD4_PLUGPP_INCLUDE_COD4_PLUGPP_CMDLINE_HPP_
 
 #include "cod4-plugpp/Optional.hpp"
-#include "cod4-plugpp/PluginApi.h"
+#include "cod4-plugpp/PluginApi.hpp"
 
 #include <sstream>
 

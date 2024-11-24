@@ -2,7 +2,7 @@
 #define COD4_PLUGPP_INCLUDE_COD4_PLUGPP_PLUGIN_HPP_
 
 #include "cod4-plugpp/Kick.hpp"
-#include "cod4-plugpp/PluginApi.h"
+#include "cod4-plugpp/PluginApi.hpp"
 
 #include <cstdint>
 #include <functional>

@@ -1,7 +1,7 @@
 #include "cod4-plugpp/Command.hpp"
 
 #include "cod4-plugpp/Exception.hpp"
-#include "cod4-plugpp/PluginApi.h"
+#include "cod4-plugpp/PluginApi.hpp"
 
 #include <array>
 #include <memory>

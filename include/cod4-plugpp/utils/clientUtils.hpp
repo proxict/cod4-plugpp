@@ -2,7 +2,7 @@
 #define COD4_PLUGPP_INCLUDE_COD4_PLUGPP_CLIENTUTILS_HPP_
 
 #include "cod4-plugpp/Optional.hpp"
-#include "cod4-plugpp/PluginApi.h"
+#include "cod4-plugpp/PluginApi.hpp"
 #include "cod4-plugpp/utils/stringUtils.hpp"
 
 #include <algorithm>
