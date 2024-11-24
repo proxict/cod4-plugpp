@@ -5,6 +5,8 @@ if(NOT DEFINED COD4_PLUGIN_DIR)
     message(FATAL_ERROR "Please, define directory to the CoD4x_Server/plugins directory by setting the COD4_PLUGIN_DIR variable.\nExample: cmake -DCOD4_PLUGIN_DIR=/home/cod4/CoD4x_Server/plugins ..")
 endif()
 
+option(ENABLE_TESTS "Enable unit-tests" OFF)
+
 set(CMAKE_SHARED_LIBRARY_PREFIX "")
 set(COMMON_FLAGS "-m32 -mtune=native -Wall -fPIC -fvisibility=hidden")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 ${COMMON_FLAGS}")
@@ -38,3 +40,6 @@ set_property(TARGET cod4-plugpp PROPERTY CXX_STANDARD 17)
 set_property(TARGET cod4-plugpp PROPERTY CXX_STANDARD_REQUIRED TRUE)
 set_property(TARGET cod4-plugpp PROPERTY CXX_EXTENSIONS OFF)
 
+if (${ENABLE_TESTS})
+    add_subdirectory(tests)
+endif()
