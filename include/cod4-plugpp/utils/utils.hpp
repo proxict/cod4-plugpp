@@ -1,9 +1,9 @@
 #ifndef COD4_PLUGPP_INCLUDE_COD4_PLUGPP_UTILS_HPP_
 #define COD4_PLUGPP_INCLUDE_COD4_PLUGPP_UTILS_HPP_
 
-#include "cod4-plugpp/Optional.hpp"
 #include "cod4-plugpp/typeTraits.hpp"
 
+#include <optional>
 #include <string>
 
 namespace plugpp {
@@ -11,12 +11,12 @@ namespace plugpp {
 /// Gets an attribute's value from the given userinfo string.
 /// @param userInfo The userinfo string to get the value from. It's a backslash separated key-value list.
 /// @param attrName Name of the attribute to get the value of.
-[[nodiscard]] inline Optional<std::string> getUserInfoAttribute(const std::string& userInfo,
-                                                                const std::string& attrName) {
+[[nodiscard]] inline std::optional<std::string> getUserInfoAttribute(const std::string& userInfo,
+                                                                     const std::string& attrName) {
     const std::string escapedAttrName = "\\" + attrName + "\\";
     const std::size_t attrPos = userInfo.find(escapedAttrName);
     if (attrPos == std::string::npos) {
-        return NullOptional;
+        return std::nullopt;
     }
     const std::size_t valueStartPos = attrPos + escapedAttrName.size();
     const std::size_t valueEndPos = userInfo.find("\\", valueStartPos);

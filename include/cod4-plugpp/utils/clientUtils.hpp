@@ -1,22 +1,22 @@
 #ifndef COD4_PLUGPP_INCLUDE_COD4_PLUGPP_CLIENTUTILS_HPP_
 #define COD4_PLUGPP_INCLUDE_COD4_PLUGPP_CLIENTUTILS_HPP_
 
-#include "cod4-plugpp/Optional.hpp"
 #include "cod4-plugpp/PluginApi.hpp"
 #include "cod4-plugpp/utils/stringUtils.hpp"
 
 #include <algorithm>
 #include <vector>
+#include <optional>
 
 namespace plugpp {
 
 /// Gets a client in the given slot if the slot is occupied by a player (active client)
 /// @param slot The slot to get the client for.
-/// @returns Pointer to the client or NullOptional if the slot is vacant.
-[[nodiscard]] inline Optional<client_t*> getClientBySlot(const int slot) {
+/// @returns Pointer to the client or std::nullopt if the slot is vacant.
+[[nodiscard]] inline std::optional<client_t*> getClientBySlot(const int slot) {
     client_t* cl = Plugin_GetClientForClientNum(slot);
     if (!cl || !cl->state) {
-        return NullOptional;
+        return std::nullopt;
     }
     return cl;
 }
@@ -51,13 +51,13 @@ enum class HandleType { INVALID, SLOTID, PLAYER_STEAMID, NAME };
 
 /// Gets a client uniquely matching the given handle
 /// @param handle A string that could represet the player's name, slot number, player ID or steam ID.
-/// @returns A pointer to the client matching the given handle or NullOptional if zero or multiple players
+/// @returns A pointer to the client matching the given handle or std::nullopt if zero or multiple players
 /// match.
-[[nodiscard]] inline Optional<client_t*> findClient(const std::string& handle) {
+[[nodiscard]] inline std::optional<client_t*> findClient(const std::string& handle) {
     const HandleType handleType = getHandleType(handle);
     switch (handleType) {
     case HandleType::INVALID:
-        return NullOptional;
+        return std::nullopt;
     case HandleType::SLOTID:
         return getClientBySlot(std::stoi(handle));
     case HandleType::PLAYER_STEAMID: {
@@ -66,7 +66,7 @@ enum class HandleType { INVALID, SLOTID, PLAYER_STEAMID, NAME };
             return std::to_string(player.second->playerid) == handle ||
                    (player.second->steamid != 0 && std::to_string(player.second->steamid) == handle);
         });
-        return it != std::end(players) ? Optional<client_t*>(it->second) : NullOptional;
+        return it != std::end(players) ? std::optional<client_t*>(it->second) : std::nullopt;
     }
     case HandleType::NAME: {
         client_t* cl = nullptr;
@@ -75,14 +75,14 @@ enum class HandleType { INVALID, SLOTID, PLAYER_STEAMID, NAME };
                 if (!cl) {
                     cl = client;
                 } else {
-                    return NullOptional;
+                    return std::nullopt;
                 }
             }
         }
-        return cl ? Optional<client_t*>(cl) : NullOptional;
+        return cl ? std::optional<client_t*>(cl) : std::nullopt;
     }
     default:
-        return NullOptional;
+        return std::nullopt;
     }
 }
 

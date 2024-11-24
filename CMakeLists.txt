@@ -20,15 +20,18 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-add_subdirectory(external/lib-optional)
-add_subdirectory(external/spdlog)
+include(FetchContent)
+FetchContent_Declare(spdlog
+    GIT_REPOSITORY https://github.com/gabime/spdlog.git
+    GIT_TAG        v1.9.2
+)
+FetchContent_MakeAvailable(spdlog)
 
 add_library(cod4-plugpp OBJECT
     src/Command.cpp
     src/PluginEntry.cpp
 )
 target_link_libraries(cod4-plugpp PUBLIC
-    lib-optional
     spdlog::spdlog
 )
 target_include_directories(cod4-plugpp

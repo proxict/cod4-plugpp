@@ -1,6 +1,0 @@
-[submodule "external/lib-optional"]
-	path = external/lib-optional
-	url = https://github.com/proxict/lib-optional.git
-[submodule "external/spdlog"]
-	path = external/spdlog
-	url = https://github.com/gabime/spdlog.git

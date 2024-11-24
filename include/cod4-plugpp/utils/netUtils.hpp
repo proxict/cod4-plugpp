@@ -1,9 +1,9 @@
 #ifndef COD4_PLUGPP_INCLUDE_COD4_PLUGPP_NETUTILS_HPP_
 #define COD4_PLUGPP_INCLUDE_COD4_PLUGPP_NETUTILS_HPP_
 
-#include "cod4-plugpp/Optional.hpp"
 #include "cod4-plugpp/PluginApi.hpp"
 
+#include <optional>
 #include <string>
 
 namespace plugpp {
@@ -50,12 +50,12 @@ namespace plugpp {
 ///
 /// The given network address can be an IPv4 or IPv6 address.
 /// @param address String representation of the network address.
-/// @returns The binary representation of the given address if the conversion was successful, NullOptional
+/// @returns The binary representation of the given address if the conversion was successful, std::nullopt
 /// otherwise.
-[[nodiscard]] inline Optional<netadr_t> toNetAddr(const std::string& address) noexcept {
+[[nodiscard]] inline std::optional<netadr_t> toNetAddr(const std::string& address) noexcept {
     netadr_t out;
     if (!toNetAddr(address, &out)) {
-        return NullOptional;
+        return std::nullopt;
     }
     return out;
 }

@@ -1,9 +1,9 @@
 #ifndef COD4_PLUGPP_INCLUDE_COD4_PLUGPP_CMDLINE_HPP_
 #define COD4_PLUGPP_INCLUDE_COD4_PLUGPP_CMDLINE_HPP_
 
-#include "cod4-plugpp/Optional.hpp"
 #include "cod4-plugpp/PluginApi.hpp"
 
+#include <optional>
 #include <sstream>
 
 namespace plugpp {
@@ -20,11 +20,11 @@ public:
     /// command, not the command itself.
     ///
     /// @param index The index of the argument to get.
-    /// @returns The requested argument or NullOptional if the @ref index is past the number of arguments on
+    /// @returns The requested argument or std::nullopt if the @ref index is past the number of arguments on
     /// the command line or if no arguments are remaining after shifting them (@see shift()).
-    [[nodiscard]] Optional<const char*> get(const int index) const noexcept {
+    [[nodiscard]] std::optional<const char*> get(const int index) const noexcept {
         if (index + mShift >= Plugin_Cmd_Argc()) {
-            return NullOptional;
+            return std::nullopt;
         }
         return Plugin_Cmd_Argv(index + mShift);
     }
@@ -34,16 +34,16 @@ public:
     /// This overload converts the argument to the given type. The given type shall have the
     /// operator<<(std::ostream&) defined.
     template <typename T>
-    [[nodiscard]] Optional<T> get(const int index) const {
-        Optional<const char*> arg = get(index);
+    [[nodiscard]] std::optional<T> get(const int index) const {
+        std::optional<const char*> arg = get(index);
         if (!arg) {
-            return NullOptional;
+            return std::nullopt;
         }
         std::stringstream ss;
         ss << *arg;
         T out;
         ss >> out;
-        return ss.fail() ? NullOptional : Optional<T>(out);
+        return ss.fail() ? std::nullopt : std::optional<T>(out);
     }
 
     /// Shifts the root of the arguments to the left by the specified amount
